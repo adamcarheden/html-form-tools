@@ -1,0 +1,11 @@
+{
+  "name": "html-input-tools",
+  "version": "1.0.0",
+  "description": "Framework for fine-grained control over allowed user input into HTML form fields.",
+  "main": "html-input-tools.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adam Carheden <adam.carheden@gmail.com>",
+  "license": "GPL-3.0"
+}
