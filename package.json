@@ -4,8 +4,23 @@
   "description": "Framework for fine-grained control over allowed user input into HTML form fields.",
   "main": "html-input-tools.js",
   "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "lint": "eslint --ext .js src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Adam Carheden <adam.carheden@gmail.com>",
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "babel-core": "^6.18.2",
+    "babel-eslint": "^7.1.0",
+    "babel-loader": "^6.2.7",
+    "babel-preset-es2015": "^6.18.0",
+    "eslint": "^3.9.1",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-friendly-formatter": "^2.0.6",
+    "eslint-loader": "^1.6.1",
+    "eslint-plugin-promise": "^3.3.1",
+    "eslint-plugin-standard": "^2.0.1",
+    "webpack": "^1.13.3"
+  }
 }
