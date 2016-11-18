@@ -53,7 +53,7 @@
 */
 
 // Functions the user should implement
-const user = {
+const defaultCallbacks = {
 	// Should strip formatting applied by the format() function and return the stripped value
 	unformat: function(value) { return value },
 
@@ -110,32 +110,38 @@ const emit = {
 	synced: function() {},
 }
 
-
-
 // Events we intercept
 const events = {
 	HTMLInputElement: {
+/*
 		keydown: function(e) {
+			this.debug(`keydown: value='${this.input.value}'`)
 			if (this.ignoreKey(e)) return true
 		},
 		keyup: function(e) {
+			this.debug(`keyup: value='${this.input.value}'`)
 			if (this.ignoreKey(e)) return true
 		},
+*/
 		keypress: function(e) {
+			this.debug(`keypress: value='${this.input.value}'`)
 			if (this.ignoreKey(e)) return true
-			console.log('keypress')
-			if (this.validateAndFormat(e)) e.preventDefault()
+			this.validateAndFormat(e)
 		},
 		// keypress handles normal typing and prevents input from firing
 		// input handles things when the user copyies and pasts something in or deletes with ctrl+x or something
+/*
 		input: function(e) { 
-			console.log('input')
-			if (this.validateAndFormat(e)) e.preventDefault()
+			this.debug(`input: value='${this.input.value}'`)
+			this.validateAndFormat(e)
 		},
+*/
 		change: function(e) {
+			this.debug(`change: value='${this.input.value}'`)
 			try {
-				user.synchronize(this._value)
-				emit.synced(this._value)
+				var value = this.callbacks.unformat(this.input.value)
+				this.callbacks.synchronize(value)
+				emit.synced(value)
 			} catch (ex) {
 				emit.unsynched(ex)
 			}
@@ -148,6 +154,16 @@ const events = {
 var defaultOpts = {
 	ignoreCtrl: true,
 	ignoreAlt: true,
+	debug: false,
+}
+
+var predictInput = function(e) {
+	if (!('key' in e)) throw new Error(`predictInput called on event of type '${e.type}', which has no value 'key'. You probably only want to call this on KeyEvents`)
+	var beforeSelection = e.target.value.slice(0, e.target.selectionStart)
+	var afterSelection = e.target.value.slice(e.target.selectionEnd)
+	var res = `${beforeSelection}${e.key}${afterSelection}`
+	//console.log({before: beforeSelection, key: e.key, after: afterSelection, res: res, value: e.target.value, start: e.target.selectionStart, end: e.target.selectionEnd})
+	return res
 }
 
 class ManagedInput {
@@ -162,6 +178,7 @@ class ManagedInput {
 			this.input = input
 		}
 		if (!(typeof this.input === 'object')) {
+			throw Error(`Expected an object or it of an element to manage, but got a ${typeof this.input}`)
 		}
 		if (!(this.input instanceof HTMLInputElement)) { // eslint-disable-line no-undef
 			throw Error(`Expected an HTMLInputElement, got a ${this.input.constructor.name}`)
@@ -169,9 +186,9 @@ class ManagedInput {
 
 		this.callbacks = {}
 		if (typeof callbacks === 'undefined') callbacks = {}
-		if (typeof callbacks !== 'object') throw new Error(`callbacks should be an object, not a ${typeof opts}`)
-		Object.keys(user).forEach((cb) => {
-			this.callbacks[cb] = (cb in callbacks) ? callbacks[cb] : user[cb]
+		if (typeof callbacks !== 'object') throw new Error(`callbacks should be an object, not a ${typeof callbacks}`)
+		Object.keys(defaultCallbacks).forEach((cb) => {
+			this.callbacks[cb] = (cb in callbacks) ? callbacks[cb] : defaultCallbacks[cb]
 		})
 
 		this.opts = {}
@@ -188,8 +205,15 @@ class ManagedInput {
 	}
 
 	ignoreKey(evnt) {
-		if (this.opts.ignoreCtrl && evnt.ctrlKey) return true
-		if (this.opts.ignoreAlt && evnt.altKey) return true
+		if (!('key' in evnt)) throw new Error(`ignoreKey should only be called for KeyEvents. Called on event of type ${evnt.type}`)
+		if (evnt.key.length > 1 ||
+			(this.opts.ignoreCtrl && evnt.ctrlKey) ||
+			(this.opts.ignoreAlt && evnt.altKey) 
+		) {
+			this.debug({ignoring: evnt})
+			return true
+		}
+		return false
 	}
 
 	// If current state of input is a valid value,
@@ -199,20 +223,26 @@ class ManagedInput {
 	// 	true  - calling event should prevent user input if possible ()
 	// 	false - calling event should allow user input
 	validateAndFormat(e) {
-		var oldValue = this.input.value
 
-		var beforeSelection = e.target.value.slice(0, e.target.selectionStart)
-		var afterSelection = e.target.value.slice(e.target.selectionEnd,-1)
-		var newValue = `${beforeSelection}${e.key}${afterSelection}`
-
+		var oldValue, newValue
+		if (e.key) {
+			oldValue = e.target.value
+			newValue = predictInput(e)
+		} else {
+			newValue = e.target.value
+		}
 		var unformatted = this.callbacks.unformat(newValue, e.target.selectionStart)
 		if (typeof unformatted !== 'object') unformatted = { value: unformatted, cursorPos: false }
+		this.debug({e: e, oldValue: oldValue, newValue: newValue, unformatted: unformatted.value, cursorPos: unformatted.cursorPos})
 		try {
 			if (!this.callbacks.validate(unformatted.value)) {
+				this.debug(`'${unformatted.value}': acceptable intermediate value, formatting delayed`)
 				emit.invalid(oldValue, newValue, unformatted.value, this.input.value)
 			} else {
-				var formatted = emit.format(unformatted.value, unformatted.cursorPos)
+				var formatted = this.callbacks.format(unformatted.value, unformatted.cursorPos)
 				if (typeof formatted !== 'object') formatted = { value: formatted, cursorPos: false }
+				this.debug(`'${unformatted.value}' (${unformatted.cursorPos}) is valid, formatted is '${formatted.value}' (${unformatted.cursorPos})`)
+				e.preventDefault() // Since we're inserting the formatted value, we prevent keystroke
 				e.target.value = formatted.value
 				if (formatted.cursorPos) {
 					this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos+1)
@@ -220,10 +250,16 @@ class ManagedInput {
 				emit.valid(oldValue, newValue, unformatted.value, this.input.value)
 			}
 		} catch (ex) {
+			this.debug(`Invalid value '${unformatted.value}': "${ex.message}". We'll prevent input if possible.`)
+			e.preventDefault()
 			emit.invalid(oldValue, newValue, unformatted.value, this.input.value)
 			return false
 		}
 		return true
+	}
+
+	debug(msg) {
+		if (this.opts.debug) console.log(msg)
 	}
 
 }
