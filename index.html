@@ -26,10 +26,22 @@
 			},
 			sync: function(value) {
 				console.log({sync: value});
+				document.querySelector('#moneyRow .insync').innerHTML = '<span style="color: Green">Yes</span>';
 			},
-			invalid: function(ov,nv,uf,raw) { console.log({nobueno: nv}) }, 
-			valid: function(ov,nv,uf,raw) { console.log({bueno: nv}) }, 
-			intermediate: function(ov,nv,uf,raw) { console.log({asiasi: nv}) }, 
+			invalid: function(ov,nv,uf,raw) { 
+				console.log({invalid: nv});
+				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: red">Invalid</span>';
+				document.querySelector('#moneyRow .insync').innerHTML = 'out of sync';
+			}, 
+			intermediate: function(ov,nv,uf,raw) { 
+				console.log({intermediate: nv});
+				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: blue">Intermediate</span>';
+				document.querySelector('#moneyRow .insync').innerHTML = 'out of sync';
+			}, 
+			valid: function(ov,nv,uf,raw) { 
+				console.log({valid: nv});
+				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: green">Valid</span>';
+			}, 
 		}, {debug: false});
 	});
 </script>
@@ -37,9 +49,11 @@
 </head>
 <body>
 	<h1>HTML Input Tools</h1>
-	Integer: <input id='int'/><br/>
-	Decimal: <input id='dec'/><br/>
-	Money: <input id='money' value='27.5'/><br/>
+	<table>
+	<tr id='intRow'><td>Integer</td><td><input id='int'/></td><td class='valid'></td><td class='insync'></td></tr>
+	<tr id='decRow'><td>Decimal</td><td><input id='dec'/></td><td class='valid'></td><td class='insync'></td></tr>
+	<tr id='moneyRow'><td>Money  </td><td><input id='money'></td><td class='valid'></td><td class='insync'></td></tr>
+	</table>
 </body>
 </html>
 

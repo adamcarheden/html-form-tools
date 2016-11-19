@@ -72,8 +72,8 @@ const events = {
 			this.validateAndFormat(e)
 		},
 
-		change: function(e) {
-			this.debug(`change: value='${this.input.value}'`)
+		blur: function(e) {
+			this.debug(`blur: value='${this.input.value}'`)
 			this.sync()
 		},
 	}
@@ -92,7 +92,6 @@ var predictInput = function(e) {
 	var beforeSelection = e.target.value.slice(0, e.target.selectionStart)
 	var afterSelection = e.target.value.slice(e.target.selectionEnd)
 	var res = `${beforeSelection}${e.key}${afterSelection}`
-	//console.log({before: beforeSelection, key: e.key, after: afterSelection, res: res, value: e.target.value, start: e.target.selectionStart, end: e.target.selectionEnd})
 	return res
 }
 
@@ -225,7 +224,6 @@ class ManagedInput {
 		}
 		var unformatted = this.unformat(newValue, cursorPos)
 		if (typeof unformatted !== 'object') unformatted = { value: unformatted, cursorPos: false }
-		this.debug({e: e, oldValue: oldValue, newValue: newValue, unformatted: unformatted.value, cursorPos: unformatted.cursorPos})
 		try {
 			if (!this.validate(unformatted.value)) {
 				this.debug(`'${unformatted.value}': acceptable intermediate value, formatting delayed`)
