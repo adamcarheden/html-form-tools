@@ -1,69 +1,16 @@
-/*
-## User input process:
-1. User types something
-1. Validate new state of the input field
-	1. Potentially prevent input if new value is invalid
-		* Must allow intermediary values (i.e. '1.' is not a valid floating point number, but it's  
-      allowed because the input will be in that state at some point as the user types '1.0' which IS a valid value.
-	1. Optionally notify user of blocked input (i.e. shake screen or temporarily color background) 
- 	1. Optionally notify user of 'currently-invalid' input that was allowed (i.e. intermediary values)
-1. Optionally format the input field prior to updating
-
- * 3) Form field looses focus
- * 4) Validate new value in context of other data.
- * 4a) If failure, flag field as out of sync with back-end data; provide user with explanation
- * 4b) If success, update back-end data. Remove out-of-sync flag if set.
- *
- */
-
-/*
-
-## Input Events
-
-### Installing
-*	target.on<event name> = 
-	* Returning false prevents default behavior
-* target.addEventListener()
-	* Returning value has no effect
-
-### Key events
-1. keydown
-	* After field updated
-	* Repeats if key held
-	* keyCode but no charCode
-1. keypress
-	* Before field updated
-	* Repeats if key held
-	* charCode but no keyCode
-1. input
-	* After field updated
-	* Doesn't fire if preventDefault/stopPropagation called keydown/keypress
-	* When paste via menus
-1. keyup
-	* After field updated
-	* Repeats if key held
-	* Fires even if preventDefault
-
-### Focus events
-1. focus
-1. change
-	* Before blur
-1. blur
-
-*/
-
 // Functions the user should implement
 const defaultCallbacks = {
 	// Should strip formatting applied by the format() function and return the stripped value
-	unformat: function(value) { return value },
+	unformat: false,
 
 	// Should:
 	// * return true if the value is valid
 	// * return false if the value is invalid but an acceptable intermediate value
-	// * throw an InvalidValueError if the value is invalid and should be prevented if possible
+	//   (i.e. '1.' is not a valid decimal number but you can't type '1.0' witout first typing '1.')
+	// * throw an exception if the value is invalid and input should be prevented if possible
 	// Params:
 	// * value - The value of the input field with formatting stripped by unformat()
-	validate: function(value) { return true },
+	validate: false,
 
 	// Params:
 	// * value - The validated, unformatted value of the input field
@@ -74,40 +21,25 @@ const defaultCallbacks = {
 	//   * value: same as above
 	//   * cursorPos: The offset in the formatted string of the cursor
   //     This is optional, but without it the cursor will be moved to the end of the input with each keystroke
-	format: function(value, cursorPos) { return {value: value, cursorPos: cursorPos } },
+	format: false,
 
-	// Should assign the value to backend storage, optionally validating with respect to other related data.
-	// If the new value would put the backend in an invalid state, it should /not/ be assigned and instead
-	// it should throw a CantSyncError
+	// Should assign the value to some backend storage
+	// I recommend validating with respect to other related data and signaling the user
+	// if the new value would put your dataset in an invalid state, but that sort of logic here would
+	// be a poorly placed and coupling of concerns.
 	// Params:
 	// * value - The validated, unformatted value of the input field
-	synchronize: function(value) { },
-}
+	sync: false,
 
-class CantSyncError extends Error {}
-class InvalidValueError extends Error {}
-const errors = {
-	CantSyncError: CantSyncError,
-	InvalidValueError: InvalidValueError
-}
-
-// Events we emit
-const emit = {
 	// Called when the input changes and the value is invalid
 	// We prevent this when possible, but we can't stop the user from pasting it in
-	invalid: function() {},
+	invalid: false,
 
 	// Called when the input changes and the value is invalid but allowed (intermediate)
-	intermediate: function() {},
+	intermediate: false,
 
 	// Called when the input changes and the value is valid
-	valid: function() {},
-
-	// Called when the backend storage update fails
-	unsynced: function() {},
-
-	// Called when the backend storage update is successful
-	synced: function() {},
+	valid: false,
 }
 
 // Events we intercept
@@ -129,22 +61,20 @@ const events = {
 			this.validateAndFormat(e)
 		},
 		// keypress handles normal typing and prevents input from firing
-		// input handles things when the user copyies and pasts something in or deletes with ctrl+x or something
-/*
+		// input handles things when the user copys and pasts something in or deletes 
+		// with backspace or ctrl+x or something. All the possible things that could
+		// happen there are too complex to handle, so we never prevent these.
+		// validateAndFormat() will call the invalid() callback to let our user
+		// deal with it as appropriate (such as highlighting the field to signal the
+		// his/her user.)
 		input: function(e) { 
 			this.debug(`input: value='${this.input.value}'`)
 			this.validateAndFormat(e)
 		},
-*/
+
 		change: function(e) {
 			this.debug(`change: value='${this.input.value}'`)
-			try {
-				var value = this.callbacks.unformat(this.input.value)
-				this.callbacks.synchronize(value)
-				emit.synced(value)
-			} catch (ex) {
-				emit.unsynched(ex)
-			}
+			this.sync()
 		},
 	}
 	// TODO: textarea
@@ -184,11 +114,26 @@ class ManagedInput {
 			throw Error(`Expected an HTMLInputElement, got a ${this.input.constructor.name}`)
 		}
 
+		if (('format' in callbacks) && !('unformat' in callbacks)) {
+			console.warn(`You defined the format callback but not the unformat callback. That probably won't work well.`)
+		}
+		if (('unformat' in callbacks) && !('format' in callbacks)) {
+			console.warn(`You defined the unformat callback but not the format callback. That probably won't work well.`)
+		}
+		if (!(('format' in callbacks) || ('unformat' in callbacks) || ('validate' in callbacks))) {
+			console.warn(`You didn't define the format/unformat callbacks nor the validate callback. This module doesn't really do anything if you haven't defined at least one of those.`)
+		}
+
 		this.callbacks = {}
 		if (typeof callbacks === 'undefined') callbacks = {}
 		if (typeof callbacks !== 'object') throw new Error(`callbacks should be an object, not a ${typeof callbacks}`)
 		Object.keys(defaultCallbacks).forEach((cb) => {
 			this.callbacks[cb] = (cb in callbacks) ? callbacks[cb] : defaultCallbacks[cb]
+		})
+		Object.keys(callbacks).forEach(function(cb) {
+			if (!(cb in defaultCallbacks)) {
+				console.warn(`Unknown callback: '${cb}'`)
+			}
 		})
 
 		this.opts = {}
@@ -198,10 +143,53 @@ class ManagedInput {
 			this.opts[opt] = (opt in opts) ? opts[opt] : defaultOpts[opt]
 		})
 
+		this.validateAndFormat()
+
 		this.inputType = this.input.constructor.name
 		Object.keys(events[this.inputType]).forEach((evnt) => {
 			this.input.addEventListener(evnt, (e) => { events[this.inputType][evnt].bind(this)(e) })
 		})
+
+	}
+
+	unformat(value, cursorPos) {
+		if (typeof value === 'undefined') value = this.input.value
+		if (this.callbacks.unformat) return this.callbacks.unformat(value, cursorPos)
+		return value
+	}
+	unformatted(value) {
+		if (typeof value === 'undefined') value = this.input.value
+		var unf = this.callbacks.unformat ? this.callbacks.unformat(value) : value
+		if (typeof unf === 'object') return unf.value
+		return unf
+	}
+	format(value, cursorPos) {
+		if (this.callbacks.format) return this.callbacks.format(value, cursorPos)
+		return value
+	}
+	validate(value) {
+		if (typeof value === 'undefined') value = this.unformatted(this.input.value)
+		if (this.callbacks.validate) return this.callbacks.validate(value)
+		return true
+	}
+	sync(value) {
+		if (typeof value === 'undefined') value = this.unformatted(this.input.value)
+		try {
+			if (this.callbacks.sync && this.validate(value)) {
+				return this.callbacks.sync(value)
+			}
+		} catch(e) {
+			this.debug(`Refusing to sync invalid value ${value}`)
+		}
+	}
+	invalid(oldValue, newValue, unformattedValue, rawValue) {
+		if (this.callbacks.invalid) this.callbacks.invalid(oldValue, newValue, unformattedValue, rawValue)
+	}
+	intermediate(oldValue, newValue, unformattedValue, rawValue) {
+		if (this.callbacks.intermediate) this.callbacks.intermediate(oldValue, newValue, unformattedValue, rawValue)
+	}
+	valid(oldValue, newValue, unformattedValue, rawValue) {
+		if (this.callbacks.valid) this.callbacks.valid(oldValue, newValue, unformattedValue, rawValue)
 	}
 
 	ignoreKey(evnt) {
@@ -223,36 +211,40 @@ class ManagedInput {
 	// 	true  - calling event should prevent user input if possible ()
 	// 	false - calling event should allow user input
 	validateAndFormat(e) {
+		// NOTE -- We can't assume 'e' is set because we call this on instantiation to format the
+		// input's default value
 
 		var oldValue, newValue
-		if (e.key) {
-			oldValue = e.target.value
+		var cursorPos = this.input.selectionStart
+		if (e && e.key) {
+			oldValue = this.input.value
 			newValue = predictInput(e)
+			cursorPos++
 		} else {
-			newValue = e.target.value
+			newValue = this.input.value
 		}
-		var unformatted = this.callbacks.unformat(newValue, e.target.selectionStart)
+		var unformatted = this.unformat(newValue, cursorPos)
 		if (typeof unformatted !== 'object') unformatted = { value: unformatted, cursorPos: false }
 		this.debug({e: e, oldValue: oldValue, newValue: newValue, unformatted: unformatted.value, cursorPos: unformatted.cursorPos})
 		try {
-			if (!this.callbacks.validate(unformatted.value)) {
+			if (!this.validate(unformatted.value)) {
 				this.debug(`'${unformatted.value}': acceptable intermediate value, formatting delayed`)
-				emit.invalid(oldValue, newValue, unformatted.value, this.input.value)
+				this.intermediate(oldValue, newValue, unformatted.value, this.input.value)
 			} else {
-				var formatted = this.callbacks.format(unformatted.value, unformatted.cursorPos)
+				var formatted = this.format(unformatted.value, unformatted.cursorPos)
 				if (typeof formatted !== 'object') formatted = { value: formatted, cursorPos: false }
-				this.debug(`'${unformatted.value}' (${unformatted.cursorPos}) is valid, formatted is '${formatted.value}' (${unformatted.cursorPos})`)
-				e.preventDefault() // Since we're inserting the formatted value, we prevent keystroke
-				e.target.value = formatted.value
+				this.debug(`'${unformatted.value}' (cursorPos=${unformatted.cursorPos}) is valid, formatted as '${formatted.value}' (cursorPos=${formatted.cursorPos})`)
+				if (e) e.preventDefault() // Since we're inserting the formatted value, we prevent keystroke
+				this.input.value = formatted.value
 				if (formatted.cursorPos) {
-					this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos+1)
+					this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos)
 				}
-				emit.valid(oldValue, newValue, unformatted.value, this.input.value)
+				this.valid(oldValue, newValue, unformatted.value, this.input.value)
 			}
 		} catch (ex) {
 			this.debug(`Invalid value '${unformatted.value}': "${ex.message}". We'll prevent input if possible.`)
-			e.preventDefault()
-			emit.invalid(oldValue, newValue, unformatted.value, this.input.value)
+			if (e) e.preventDefault()
+			if (!e || e.type !== 'keypress') this.invalid(oldValue, newValue, unformatted.value, this.input.value)
 			return false
 		}
 		return true
@@ -266,6 +258,4 @@ class ManagedInput {
 
 module.exports = {
 	ManagedInput: ManagedInput,
-	events: events,
-	errors: errors,
 }

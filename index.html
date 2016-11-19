@@ -8,10 +8,6 @@
 <script>
 	window.addEventListener('load', function(event) {
 		var minput = new window['html-input-tools'].ManagedInput('money', {
-			format: function(value, cursorPos) {
-				console.log('Formatting '+value+" ("+cursorPos+")");
-				return {value: '$'+value, cursorPos: (cursorPos === false) ? cursorPos+1 : false }
-			},
 			unformat: function(value, cursorPos) {
 				var unf = value.replace(/^\$*/,'')
 				var cp = cursorPos
@@ -24,7 +20,17 @@
 				if (value.length === 0 || value.match(/^\d*\.$/)) return false;
 				throw new Error("Invalid value '"+value+"'");
 			},
-		}, {debug: true});
+			format: function(value, cursorPos) {
+				var res = {value: '$'+value, cursorPos: (cursorPos === false) ? false : cursorPos+1 }
+				return res
+			},
+			sync: function(value) {
+				console.log({sync: value});
+			},
+			invalid: function(ov,nv,uf,raw) { console.log({nobueno: nv}) }, 
+			valid: function(ov,nv,uf,raw) { console.log({bueno: nv}) }, 
+			intermediate: function(ov,nv,uf,raw) { console.log({asiasi: nv}) }, 
+		}, {debug: false});
 	});
 </script>
 
@@ -33,7 +39,7 @@
 	<h1>HTML Input Tools</h1>
 	Integer: <input id='int'/><br/>
 	Decimal: <input id='dec'/><br/>
-	Money: <input id='money'/><br/>
+	Money: <input id='money' value='27.5'/><br/>
 </body>
 </html>
 

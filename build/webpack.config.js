@@ -1,9 +1,9 @@
 const webpack = require( 'webpack' )
 const path = require('path')
-const projectRoot = path.resolve(__dirname)
+const projectRoot = path.resolve(__dirname+"/../")
 
 module.exports = {
-  entry: './src/html-input-tools.js',
+  entry: projectRoot+'/src/html-input-tools.js',
   output: {
     path: projectRoot,
     filename: 'html-input-tools.js',

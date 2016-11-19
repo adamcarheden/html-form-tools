@@ -4,7 +4,7 @@
   "description": "Framework for fine-grained control over allowed user input into HTML form fields.",
   "main": "html-input-tools.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
+    "build": "webpack --config build/webpack.config.js",
     "lint": "eslint --ext .js src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
