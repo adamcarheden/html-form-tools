@@ -6,10 +6,83 @@
 <script type='text/javascript' src='html-input-tools.js'></script>
 
 <script>
+	var commafy = function(value) {
+		if (!value.match(/\./)) return value;
+		var parts = value.split(/\./,2);
+		var res = ''
+		for (var i=1; i <= parts[0].length; i++) {
+			if (i % 3 == 0) res = ','+res;
+			res = parts[0].charAt(parts[0].length - i) + res;
+		}
+		parts[0] = res;
+		return parts.join('.');
+	}
+	var IRA = function(params) {
+		if (!('age' in params)) throw new Error("No age in params");
+		if (!('roth' in params)) params.roth = 0;
+		if (!('traditional' in params)) params.traditional = 0;
+		this._ = {};
+		this.set(params);
+	};
+	IRA.prototype = Object.create(Object.prototype, {
+		age: { get: function() { return this._.age; }},
+		traditional: { get: function() { return this._.traditional; }},
+		roth: { get: function() { return this._.roth; }},
+		set: { value: function(params) {
+			['age','roth','traditional'].forEach(function(key) {
+				if (!(key in params)) params[key] = this._[key];
+			});
+			errors = {
+				age: [],
+				roth: [],
+				traditional: [],
+			};
+			if (params.age > 70 && params.traditional > 0) {
+				var err = "You can't contribute to a traditional IRA if you're over 70";
+				errors.age.push(err);
+				errors.traditional.push(err);
+			}
+			var limit = 5500;
+			if (params.age > 50) limit += 1000;
+			var total = params.roth + params.traditional;
+			if (total > limit) {
+				var err = "Your total IRA contribution is $"+total+", but the contribution limit for your age is $"+limit;
+				errors.roth.push(err);
+				errors.traditional.push(err);
+			}
+			Object.keys(errors).forEach(function(k) {
+				if (errors[k].length > 0) throw errors;
+			});
+			this._ = params;
+		}},
+	});
+
+/*
+TODO:
+* Make ManagedInput return an object that the user can pull the unformatted value from
+* Function to generate params to set() by pulling them from ManagedInput
+	* What do we do if value is invalid? (copy-n-pasted)
+* Function to traverse error array and distribute by calling a user-defined function
+* Document: 
+	* Allow all possibly valid values, prevent or highlight invalid values
+	* Show errors for values that are invalid due to data outside the field
+*/
+
+	var set = function() {
+		try {
+			var ira = new IRA({age: 71, traditional: 501, roth: 6000 });
+		} catch (e) {
+			document.querySelector('#r_age .err').innerHTML = e.age.join('<br/>');
+			document.querySelector('#r_trad .err').innerHTML = e.traditional.join('<br/>');
+			document.querySelector('#r_roth .err').innerHTML = e.roth.join('<br/>');
+		}
+	}
 	window.addEventListener('load', function(event) {
+		set();
+/*
 		var minput = new window['html-input-tools'].ManagedInput('money', {
 			unformat: function(value, cursorPos) {
-				var unf = value.replace(/^\$*/,'')
+				var unf = value.replace(/^\$+/,'')
 				var cp = cursorPos
 				var ext = value.length - unf.length
 				cp -= Math.min(cursorPos, ext)
@@ -40,20 +113,53 @@
 			}, 
 			valid: function(ov,nv,uf,raw) { 
 				console.log({valid: nv});
-				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: green">Valid</span>';
+				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: green">Valid: '+commafy(nv)+'</span>';
 			}, 
 		}, {debug: false});
+*/
 	});
 </script>
 
 </head>
 <body>
-	<h1>HTML Input Tools</h1>
+<h1>HTML Input Tools</h1>
+
+<p>
+In 2017, the <a href='https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-ira-contribution-limits'>IRS</a> lets you contribute up to $5,500 to your Individual Retirement Accounts (IRA). People over 50 can deduct an additional $1000 for a total of $6,500.
+</p>
+<p>
+There are two types of IRAs: Traditional and Roth. The contribution limits apply to the total contributions you make to all of your IRAs of either type. If you're over 70, you can't contribute to a Traditional IRA, but you may still contribute to a Roth.
+</p>
+<p>
+The form below calculates your total IRA contribution and lets you know if there's a problem with what you type.
+</p>
+
+<table>
+<tr id='r_age'>
+	<td>How old are you?</td>
+	<td id='c_age'><span style='visibility: hidden'>$</span><input id='age'/></td>
+	<td class='err'></td>
+</tr>
+<tr id='r_trad'>
+	<td>Traditional IRA contribution: </td>
+	<td id='c_trad'>$<input id='trad'/></td>
+	<td class='err'></td>
+</tr>
+<tr id='r_roth'>
+	<td>Roth IRA Contribution: </td>
+	<td id='c_roth'>$<input id='roth'/></td>
+	<td class='err'></td>
+</tr>
+
+</table>
+
+<!--
 	<table>
 	<tr id='intRow'><td>Integer</td><td><input id='int'/></td><td class='valid'></td><td class='insync'></td></tr>
 	<tr id='decRow'><td>Decimal</td><td><input id='dec'/></td><td class='valid'></td><td class='insync'></td></tr>
 	<tr id='moneyRow'><td>Money  </td><td><input id='money'></td><td class='valid'></td><td class='insync'></td></tr>
 	</table>
+-->
 </body>
 </html>
 
