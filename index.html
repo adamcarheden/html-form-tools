@@ -3,59 +3,84 @@
 <head>
 <meta charset="utf-8">
 <title>html-input-tools</title>
+<style type='text/css'>
+.err input {
+	background-color: rgba(255,0,0,.15);
+}
+.err .err {
+	font-style: italic;
+	color: red;
+}
+.lbl {
+	text-align: right;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.18.1/babel.min.js"></script>
+<script src='../data-true/DataTrue.js'></script>
 <script type='text/javascript' src='html-input-tools.js'></script>
-
 <script>
-	var commafy = function(value) {
-		if (!value.match(/\./)) return value;
-		var parts = value.split(/\./,2);
-		var res = ''
-		for (var i=1; i <= parts[0].length; i++) {
-			if (i % 3 == 0) res = ','+res;
-			res = parts[0].charAt(parts[0].length - i) + res;
-		}
-		parts[0] = res;
-		return parts.join('.');
+	const commafy = window['html-input-tools'].util.commafy
+	const DataTrue = window['DataTrue'].default
+	const schema = new DataTrue()
+	const numeric = function(val) {
+		if (typeof val === 'undefined') return false
+		if (val.toString().trim().length === 0) return false
+		val = parseInt(val)
+		if (isNaN(val)) return false
+		return val
 	}
-	var IRA = function(params) {
-		if (!('age' in params)) throw new Error("No age in params");
-		if (!('roth' in params)) params.roth = 0;
-		if (!('traditional' in params)) params.traditional = 0;
-		this._ = {};
-		this.set(params);
-	};
-	IRA.prototype = Object.create(Object.prototype, {
-		age: { get: function() { return this._.age; }},
-		traditional: { get: function() { return this._.traditional; }},
-		roth: { get: function() { return this._.roth; }},
-		set: { value: function(params) {
-			['age','roth','traditional'].forEach(function(key) {
-				if (!(key in params)) params[key] = this._[key];
-			});
-			errors = {
-				age: [],
-				roth: [],
-				traditional: [],
-			};
-			if (params.age > 70 && params.traditional > 0) {
-				var err = "You can't contribute to a traditional IRA if you're over 70";
-				errors.age.push(err);
-				errors.traditional.push(err);
+	const ageLimit = function() {
+		var age = numeric(this.age)
+		var traditional = numeric(this.traditional)
+		if (!(age && traditional)) return
+		var max = 70
+		if (age > max && traditional > 0) throw new Error("You may not contribute to a traditional IRA because you're older than "+max)
+	}
+
+	var IRA = schema.createClass('IRA', {
+		age: { 
+			validate: {
+				'range': function() {
+					var age = numeric(this.age)
+					if (!age) return
+					if (age < 0) throw new Error("you can't be less than 0 years old")
+					if (age > 150) throw new Error(age+"? Ok, Methusela")
+				},
+				'age limit': ageLimit,
+				'numeric': function() { return numeric(this.age) }
 			}
-			var limit = 5500;
-			if (params.age > 50) limit += 1000;
-			var total = params.roth + params.traditional;
-			if (total > limit) {
-				var err = "Your total IRA contribution is $"+total+", but the contribution limit for your age is $"+limit;
-				errors.roth.push(err);
-				errors.traditional.push(err);
+		},
+		traditional: {
+			default: 0,
+			validate: {
+				'contribution limits': 'validateIRA',
+				'age limit': ageLimit,
+				'numeric': function() { return numeric(this.traditional) }
 			}
-			Object.keys(errors).forEach(function(k) {
-				if (errors[k].length > 0) throw errors;
-			});
-			this._ = params;
+		},
+		roth: {
+			default: 0,
+			validate: {
+				'contribution limits': 'validateIRA',
+				'numeric': function() { return numeric(this.roth) }
+			}
+		},
+		limit: { get: function() {	
+			var age = numeric(this.age) || 0
+			var max = 5500
+			if (age > 50) max += 1000
+			return max
 		}},
-	});
+		contribution: { get: function() { 
+			var t = numeric(this.traditional) || 0
+			var r = numeric(this.roth) || 0
+			return t + r
+		}},
+		validateIRA: { value: function() {
+			if (this.contribution > this.limit) throw new Error("You'll owe extra taxes	and penalties if the combined total of your traditional and roth IRA contributions exceedes $"+commafy(this.limit))
+		}}
+	})
+
 
 /*
 TODO:
@@ -68,55 +93,72 @@ TODO:
 	* Show errors for values that are invalid due to data outside the field
 */
 
-	var set = function() {
+	var ira = new IRA()
+	var inputs = {
+		age: false,
+		traditional: false,
+		roth: false,
+	}
+	Object.keys(inputs).forEach(function(f) {
+		inputs[f] = {
+			row: function() { return document.querySelector('#r_'+f) },
+			input: function() { return document.querySelector('#'+f) },
+			err: function() { return document.querySelector('#r_'+f+' .err') },
+		}
+	})
+	var set = function(setfun, val) {
 		try {
-			var ira = new IRA({age: 71, traditional: 501, roth: 6000 });
-		} catch (e) {
-			document.querySelector('#r_age .err').innerHTML = e.age.join('<br/>');
-			document.querySelector('#r_trad .err').innerHTML = e.traditional.join('<br/>');
-			document.querySelector('#r_roth .err').innerHTML = e.roth.join('<br/>');
+			// Clear our errors
+			Object.keys(inputs).forEach(function(f) {
+				var e = inputs[f].err()
+				if (e) e.innerHTML = ''
+				var r = inputs[f].row()
+				if (r) r.classList.remove('err')
+			})
+			setfun()
+			// Set totals
+			document.getElementById('total').innerHTML = '$'+commafy(ira.contribution)
+			document.getElementById('limit').innerHTML = '$'+commafy(ira.limit)
+		} catch(e) {
+			var errs = e.exceptions.get(ira)
+			Object.keys(errs).forEach(function(prop) {
+				var err = inputs[prop].err()
+				if (err) err.innerHTML = ''
+				var row = inputs[prop].row()
+				if (row) row.classList.add('err')
+				Object.keys(errs[prop]).forEach(function(vname) {
+					var div = document.createElement('div')
+					div.innerHTML = errs[prop][vname].message
+					err.appendChild(div)
+				})
+			})
+			document.getElementById('total').innerHTML = '-'
+			document.getElementById('limit').innerHTML = '-'
 		}
 	}
 	window.addEventListener('load', function(event) {
-		set();
-/*
-		var minput = new window['html-input-tools'].ManagedInput('money', {
-			unformat: function(value, cursorPos) {
-				var unf = value.replace(/^\$+/,'')
-				var cp = cursorPos
-				var ext = value.length - unf.length
-				cp -= Math.min(cursorPos, ext)
-				return { value: unf, cursorPos: cp }
-			},
-			validate: function(value) {
-				if (value.match(/^\d+(\.\d+)?$/)) return true
-				if (value.length === 0 || value.match(/^\d*\.$/)) return false;
-				throw new Error("Invalid value '"+value+"'");
-			},
-			format: function(value, cursorPos) {
-				var res = {value: '$'+value, cursorPos: (cursorPos === false) ? false : cursorPos+1 }
-				return res
-			},
-			sync: function(value) {
-				console.log({sync: value});
-				document.querySelector('#moneyRow .insync').innerHTML = '<span style="color: Green">Yes</span>';
-			},
-			invalid: function(ov,nv,uf,raw) { 
-				console.log({invalid: nv});
-				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: red">Invalid</span>';
-				document.querySelector('#moneyRow .insync').innerHTML = 'out of sync';
-			}, 
-			intermediate: function(ov,nv,uf,raw) { 
-				console.log({intermediate: nv});
-				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: blue">Intermediate</span>';
-				document.querySelector('#moneyRow .insync').innerHTML = 'out of sync';
-			}, 
-			valid: function(ov,nv,uf,raw) { 
-				console.log({valid: nv});
-				document.querySelector('#moneyRow .valid').innerHTML = '<span style="color: green">Valid: '+commafy(nv)+'</span>';
-			}, 
-		}, {debug: false});
-*/
+
+		var makeFun = function(prop, val) {
+			return function() {
+				var err = inputs[prop].err()
+				if (err) err.innerHTML = ''
+				ira[prop] = val
+			}
+		}
+
+		const HTMLInputTools = window['html-input-tools']
+		const age = HTMLInputTools.IntegerInput('age', {
+			sync: function(val) { set(function() { ira.age = val })},
+			valid: function(val) { set(function() { ira.age = val })},
+		},{MaxDigits: 2, debug: false})
+		const roth = HTMLInputTools.DollarInput('roth', {
+			sync: function(val) { set(function() { ira.roth = val })},
+			valid: function(val) { set(function() { ira.roth = val })},
+		},{debug: false})
+		const traditional = HTMLInputTools.DollarInput('traditional', {
+			sync: function(val) { set(function() {ira.traditional = val })},
+			valid: function(val) { set(function() { ira.traditional = val })},
+		},{debug: false})
 	});
 </script>
 
@@ -136,23 +178,29 @@ The form below calculates your total IRA contribution and lets you know if there
 
 <table>
 <tr id='r_age'>
-	<td>How old are you?</td>
-	<td id='c_age'><span style='visibility: hidden'>$</span><input id='age'/></td>
+	<td class='lbl'>How old are you?</td>
+	<td id='c_age'><input id='age'/></td>
 	<td class='err'></td>
 </tr>
-<tr id='r_trad'>
-	<td>Traditional IRA contribution: </td>
-	<td id='c_trad'>$<input id='trad'/></td>
+<tr id='r_traditional'>
+	<td class='lbl'>Traditional IRA contribution: </td>
+	<td id='c_tradditional'><input id='traditional'/></td>
 	<td class='err'></td>
 </tr>
 <tr id='r_roth'>
-	<td>Roth IRA Contribution: </td>
-	<td id='c_roth'>$<input id='roth'/></td>
+	<td class='lbl'>Roth IRA Contribution: </td>
+	<td id='c_roth'><input id='roth'/></td>
 	<td class='err'></td>
 </tr>
+<tr id='r_total'>
+	<td class='lbl'>Total IRA Contribution:</td>
+	<td colspan='2' id='total'></td>
+</tr>
+<tr id='r_limit'>
+	<td class='lbl'>Combined Contribution Limit:</td>
+	<td colspan='2' id='limit'></td>
 
 </table>
-
 <!--
 	<table>
 	<tr id='intRow'><td>Integer</td><td><input id='int'/></td><td class='valid'></td><td class='insync'></td></tr>

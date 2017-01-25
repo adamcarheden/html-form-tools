@@ -107,10 +107,10 @@ class ManagedInput {
 			this.input = input
 		}
 		if (!(typeof this.input === 'object')) {
-			throw Error(`Expected an object or it of an element to manage, but got a ${typeof this.input}`)
+			throw Error(`Expected an object or the name of an element to manage, but got a '${typeof this.input}'`)
 		}
 		if (!(this.input instanceof HTMLInputElement)) { // eslint-disable-line no-undef
-			throw Error(`Expected an HTMLInputElement, got a ${this.input.constructor.name}`)
+			throw Error(`Expected an HTMLInputElement, got a '${this.input.constructor.name}'`)
 		}
 
 		if (('format' in callbacks) && !('unformat' in callbacks)) {
@@ -181,14 +181,14 @@ class ManagedInput {
 			this.debug(`Refusing to sync invalid value ${value}`)
 		}
 	}
-	invalid(oldValue, newValue, unformattedValue, rawValue) {
-		if (this.callbacks.invalid) this.callbacks.invalid(oldValue, newValue, unformattedValue, rawValue)
+	invalid(unformattedValue, oldValue, newValue, rawValue) {
+		if (this.callbacks.invalid) this.callbacks.invalid(unformattedValue, oldValue, newValue, rawValue)
 	}
-	intermediate(oldValue, newValue, unformattedValue, rawValue) {
-		if (this.callbacks.intermediate) this.callbacks.intermediate(oldValue, newValue, unformattedValue, rawValue)
+	intermediate(unformattedValue, oldValue, newValue, rawValue) {
+		if (this.callbacks.intermediate) this.callbacks.intermediate(unformattedValue, oldValue, newValue, rawValue)
 	}
-	valid(oldValue, newValue, unformattedValue, rawValue) {
-		if (this.callbacks.valid) this.callbacks.valid(oldValue, newValue, unformattedValue, rawValue)
+	valid(unformattedValue, oldValue, newValue, rawValue) {
+		if (this.callbacks.valid) this.callbacks.valid(unformattedValue, oldValue, newValue, rawValue)
 	}
 
 	ignoreKey(evnt) {
@@ -227,7 +227,7 @@ class ManagedInput {
 		try {
 			if (!this.validate(unformatted.value)) {
 				this.debug(`'${unformatted.value}': acceptable intermediate value, formatting delayed`)
-				this.intermediate(oldValue, newValue, unformatted.value, this.input.value)
+				this.intermediate(unformatted.value, oldValue, newValue, this.input.value)
 			} else {
 				var formatted = this.format(unformatted.value, unformatted.cursorPos)
 				if (typeof formatted !== 'object') formatted = { value: formatted, cursorPos: false }
@@ -237,12 +237,12 @@ class ManagedInput {
 				if (formatted.cursorPos) {
 					this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos)
 				}
-				this.valid(oldValue, newValue, unformatted.value, this.input.value)
+				this.valid(unformatted.value, oldValue, newValue, this.input.value)
 			}
 		} catch (ex) {
 			this.debug(`Invalid value '${unformatted.value}': "${ex.message}". We'll prevent input if possible.`)
 			if (e) e.preventDefault()
-			if (!e || e.type !== 'keypress') this.invalid(oldValue, newValue, unformatted.value, this.input.value)
+			if (!e || e.type !== 'keypress') this.invalid(unformatted.value, oldValue, newValue, this.input.value)
 			return false
 		}
 		return true
@@ -254,6 +254,94 @@ class ManagedInput {
 
 }
 
+const commafy = function(value) {
+	value = value.toString()
+	var parts
+	if (value.match(/\./)) {
+		parts = value.split(/\./,2)
+	} else {
+		parts = [value]
+	}
+	var res = []
+	for (var i=0; i<parts[0].length; i++) {
+		if (i !== 0 && i % 3 === 0) res.unshift(',')
+		res.unshift(parts[0].charAt(parts[0].length-i-1))
+	}
+	parts[0] = res.join('')
+	return parts.join('.')
+}
+
+const mergeCallbacks = function(src, tgt, name) {
+	Object.keys(src).forEach(function(k) {
+		if (k in tgt) throw new Error(`You defined the callback '${k}', but '${name}' also defines that callback`)
+		tgt[k] = src[k]
+	})
+	return tgt
+}
+
+const IntegerInput = function(input, callbacks = {}, opts = {}) {
+	var maxDigits = false
+	if ('MaxDigits' in opts) {
+		maxDigits = opts.MaxDigits
+		delete opts.MaxDigits
+	}
+	return new ManagedInput(input, mergeCallbacks(callbacks, {
+		validate: function(val) {
+			if (!val.match(/^[0-9]*$/)) throw new Error('must be a integer')
+			if (maxDigits && val.length > maxDigits) throw new Error(`Must be at most ${maxDigits} digits`)
+			return true
+		}
+	}, 'IntegerInput'), opts)
+}
+
+const FloatInput = function(input, callbacks = {}, opts = {}) {
+	var maxMantissa = false
+	if ('MaxMantissaDigits' in opts) {
+		maxMantissa = opts.MaxMantissaDigits
+		delete opts.MaxMantissaDigits
+	}
+	var maxDecimal = false
+	if ('MaxDecimalDigits' in opts) {
+		maxDecimal = opts.MaxDecimalDigits
+		delete opts.MaxDecimalDigits
+	}
+	return new ManagedInput(input, mergeCallbacks(callbacks, {
+		validate: function(value) {
+			value = value.toString()
+			if (value.length === 0) return false
+			//                      0 1    23   4
+			var parts = value.match(/^(\d*)((\.)(\d*))?$/)
+			if (!parts) throw new Error('Must be numeric (with out without a decimal)')
+			if (maxMantissa && parts[1] && parts[1].length > maxMantissa) throw new Error(`Mantissa part must be no more than '${maxMantissa}' digits`)
+			if (maxDecimal && parts[4] && parts[4].length > maxDecimal) throw new Error(`Decimal part must be no more than '${maxDecimal}' digits`)
+			if (parts[3] && !parts[4]) return false
+			return true
+		}
+	}, 'FloatInput'), opts)
+}
+
+const DollarInput = function(input, callbacks = {}, opts = {}) {
+	if (!('MaxDecimalDigits' in opts)) opts.MaxDecimalDigits = 2
+	return FloatInput(input, mergeCallbacks(callbacks, {
+		unformat: function(value, cursorPos) {
+			value = value.toString()
+			var unf = value.replace(/^\$+/,'')
+			var cp = cursorPos
+			var ext = value.length - unf.length
+			cp -= Math.min(cursorPos, ext)
+			return { value: unf, cursorPos: cp }
+		},
+		format: function(value, cursorPos) {
+			var res = {value: '$'+value, cursorPos: (cursorPos === false) ? false : cursorPos+1 }
+			return res
+		}
+	}, 'DollarInput'), opts)
+}
+
 module.exports = {
 	ManagedInput: ManagedInput,
+	IntegerInput: IntegerInput,
+	FloatInput: FloatInput,
+	DollarInput: DollarInput,
+	util: { commafy: commafy },
 }
