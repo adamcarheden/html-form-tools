@@ -20,6 +20,10 @@
 <script type='text/javascript' src='html-input-tools.js'></script>
 <script>
 	const commafy = window['html-input-tools'].util.commafy
+
+	// DataTrue is a library for validating sets of JavaScript objects
+	// We'll use it to define the back-end date represented by this form
+	// https://github.com/adamcarheden/data-true
 	const DataTrue = window['DataTrue'].default
 	const schema = new DataTrue()
 	const numeric = function(val) {
@@ -34,6 +38,7 @@
 		var traditional = numeric(this.traditional)
 		if (!(age && traditional)) return
 		var max = 70
+		console.log('age limit')
 		if (age > max && traditional > 0) throw new Error("You may not contribute to a traditional IRA because you're older than "+max)
 	}
 
@@ -80,20 +85,10 @@
 			if (this.contribution > this.limit) throw new Error("You'll owe extra taxes	and penalties if the combined total of your traditional and roth IRA contributions exceedes $"+commafy(this.limit))
 		}}
 	})
-
-
-/*
-TODO:
-* Make ManagedInput return an object that the user can pull the unformatted value from
-* Function to generate params to set() by pulling them from ManagedInput
-	* What do we do if value is invalid? (copy-n-pasted)
-* Function to traverse error array and distribute by calling a user-defined function
-* Document: 
-	* Allow all possibly valid values, prevent or highlight invalid values
-	* Show errors for values that are invalid due to data outside the field
-*/
-
 	var ira = new IRA()
+
+
+	// Define some handles to our HTML objects
 	var inputs = {
 		age: false,
 		traditional: false,
@@ -106,20 +101,35 @@ TODO:
 			err: function() { return document.querySelector('#r_'+f+' .err') },
 		}
 	})
-	var set = function(setfun, val) {
+
+	// Attempt to push the form onto the back-end ira object
+	var set = function() {
+		// Clear our errors
+		Object.keys(inputs).forEach(function(f) {
+			var e = inputs[f].err()
+			if (e) e.innerHTML = ''
+			var r = inputs[f].row()
+			if (r) r.classList.remove('err')
+		})
+		document.getElementById('total').innerHTML = '-'
+		document.getElementById('limit').innerHTML = '-'
+		document.getElementById('left').innerHTML = '-'
+			
 		try {
-			// Clear our errors
-			Object.keys(inputs).forEach(function(f) {
-				var e = inputs[f].err()
-				if (e) e.innerHTML = ''
-				var r = inputs[f].row()
-				if (r) r.classList.remove('err')
+			// Map form values to properties of the ira object
+			ira.atomicSet(function() {
+				Object.keys(inputs).forEach(function(f) {
+					ira[f] = inputs[f].mgr.unformatted()
+				})
 			})
-			setfun()
 			// Set totals
 			document.getElementById('total').innerHTML = '$'+commafy(ira.contribution)
 			document.getElementById('limit').innerHTML = '$'+commafy(ira.limit)
+			document.getElementById('left').innerHTML  = '$'+commafy(ira.limit - ira.contribution)
 		} catch(e) {
+			// If our validation functions defined above fail, 
+			// DataTrue will give us errors from all of them to distribute to our
+			// error fields in HTML
 			var errs = e.exceptions.get(ira)
 			Object.keys(errs).forEach(function(prop) {
 				var err = inputs[prop].err()
@@ -136,30 +146,29 @@ TODO:
 			document.getElementById('limit').innerHTML = '-'
 		}
 	}
+
+	// Once the document loads...
 	window.addEventListener('load', function(event) {
 
-		var makeFun = function(prop, val) {
-			return function() {
-				var err = inputs[prop].err()
-				if (err) err.innerHTML = ''
-				ira[prop] = val
-			}
-		}
-
+		// Use HTMLInputTools to limit input into each field
+		// and call out set() function when the user enters
+		// potentially valid values.
 		const HTMLInputTools = window['html-input-tools']
-		const age = HTMLInputTools.IntegerInput('age', {
-			sync: function(val) { set(function() { ira.age = val })},
-			valid: function(val) { set(function() { ira.age = val })},
+		inputs.age.mgr = HTMLInputTools.IntegerInput('age', {
+			sync: function(val) { set() },
+			valid: function(val) { set() },
 		},{MaxDigits: 2, debug: false})
-		const roth = HTMLInputTools.DollarInput('roth', {
-			sync: function(val) { set(function() { ira.roth = val })},
-			valid: function(val) { set(function() { ira.roth = val })},
+		inputs.roth.mgr = HTMLInputTools.DollarInput('roth', {
+			sync: function(val) { set() },
+			valid: function(val) { set() },
 		},{debug: false})
-		const traditional = HTMLInputTools.DollarInput('traditional', {
-			sync: function(val) { set(function() {ira.traditional = val })},
-			valid: function(val) { set(function() { ira.traditional = val })},
+		inputs.traditional.mgr = HTMLInputTools.DollarInput('traditional', {
+			sync: function(val) { set() },
+			valid: function(val) { set() },
 		},{debug: false})
 	});
+
+
 </script>
 
 </head>
@@ -167,13 +176,13 @@ TODO:
 <h1>HTML Input Tools</h1>
 
 <p>
-In 2017, the <a href='https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-ira-contribution-limits'>IRS</a> lets you contribute up to $5,500 to your Individual Retirement Accounts (IRA). People over 50 can deduct an additional $1000 for a total of $6,500.
+In 2017, the <a href='https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-ira-contribution-limits'>IRS</a> lets you contribute up to $5,500 to your Individual Retirement Accounts (IRA). People over 55 can contribute an additional $1000 for a total of $6,500.
 </p>
 <p>
-There are two types of IRAs: Traditional and Roth. The contribution limits apply to the total contributions you make to all of your IRAs of either type. If you're over 70, you can't contribute to a Traditional IRA, but you may still contribute to a Roth.
+There are two types of IRAs: Traditional and Roth. The contribution limits apply to the total contributions you make to all of your IRAs of either type. If you're over 70, you're not allowed to contribute to a Traditional IRA, but you may still contribute to a Roth.
 </p>
 <p>
-The form below calculates your total IRA contribution and lets you know if there's a problem with what you type.
+The form below calculates your total IRA contribution and lets you know if there's a problem with what you type. Note that it both formats your inputs with '$' and commas and prevents you from typing sensless values, such as non-numeric characters or an age of more than 2 digits (sorry, Methuselah, you'll need an accountant instead).
 </p>
 
 <table>
@@ -192,13 +201,18 @@ The form below calculates your total IRA contribution and lets you know if there
 	<td id='c_roth'><input id='roth'/></td>
 	<td class='err'></td>
 </tr>
+<tr id='r_limit'>
+	<td class='lbl'>Combined Contribution Limit:</td>
+	<td colspan='2' id='limit'></td>
+</tr>
 <tr id='r_total'>
 	<td class='lbl'>Total IRA Contribution:</td>
 	<td colspan='2' id='total'></td>
 </tr>
-<tr id='r_limit'>
-	<td class='lbl'>Combined Contribution Limit:</td>
-	<td colspan='2' id='limit'></td>
+<tr id='r_left'>
+	<td class='lbl'>Amount Remaining:</td>
+	<td colspan='2' id='left'></td>
+</tr>
 
 </table>
 <!--

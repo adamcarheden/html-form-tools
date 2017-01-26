@@ -57,6 +57,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Functions the user should implement
 	const defaultCallbacks = {
 		// Should strip formatting applied by the format() function and return the stripped value
+		// Params:
+		// * value - the formatted value
+		// * value - the position of the cursor prior to unformatting
+		// Should return one of the following:
+		// * The value with formatting removed
+		//  or
+		// * An object with the keys
+		//   * value: same as above
+		//   * cursorPos: The offset in the unformatted string of the cursor
+		//     This is optional, but without it the cursor will be moved to the end of the input with each keystroke
 		unformat: false,
 
 		// Should:
@@ -69,7 +79,8 @@ return /******/ (function(modules) { // webpackBootstrap
 		validate: false,
 
 		// Params:
-		// * value - The validated, unformatted value of the input field
+		// * value     - The validated, unformatted value of the input field
+		// * cursorPos - The position of the cursor prior to formatting
 		// Should return one of the following:
 		// * A String suitable to assign to input.value
 		//  or
@@ -325,11 +336,37 @@ return /******/ (function(modules) { // webpackBootstrap
 		parts[0] = res.join('');
 		return parts.join('.');
 	};
+	const commafyCursorPos = function (value, cursorPos) {
+		var val = commafy(value);
+		if (typeof cursorPos !== 'undefined') {
+			var i = 0; // index to formatted string
+			var j = 0; // index to unformatted string
+			while (i < cursorPos && j < val.length) {
+				if (val.charAt(j) !== ',') i++;
+				j++;
+			}
+			cursorPos += j - i;
+		}
+		console.log({ com: 'mma', value: value, val: val, cursorPos: cursorPos });
+		return { value: val, cursorPos: cursorPos };
+	};
+	const uncommafyCursorPos = function (value, cursorPos) {
+		var val = value.replace(/,/g, '');
+		if (typeof cursorPos !== 'undefined') {
+			cursorPos -= value.substring(0, cursorPos + 1).replace(/[^,]/g, '').length;
+		}
+		console.log({ un: 'comma', value: value, val: val, cursorPos: cursorPos });
+		return { value: val, cursorPos: cursorPos };
+	};
 
-	const mergeCallbacks = function (src, tgt, name) {
+	const mergeCallbacks = function (src, tgt, name, skip = []) {
 		Object.keys(src).forEach(function (k) {
-			if (k in tgt) throw new Error(`You defined the callback '${ k }', but '${ name }' also defines that callback`);
-			tgt[k] = src[k];
+			if (skip.indexOf(k) !== -1) {
+				if (!(k in tgt)) tgt[k] = src[k];
+			} else {
+				if (k in tgt) throw new Error(`You defined the callback '${ k }', but '${ name }' also defines that callback`);
+				tgt[k] = src[k];
+			}
 		});
 		return tgt;
 	};
@@ -350,6 +387,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	const FloatInput = function (input, callbacks = {}, opts = {}) {
+		if (!('commafy' in opts)) opts.commafy = true;
+
 		var maxMantissa = false;
 		if ('MaxMantissaDigits' in opts) {
 			maxMantissa = opts.MaxMantissaDigits;
@@ -360,6 +399,34 @@ return /******/ (function(modules) { // webpackBootstrap
 			maxDecimal = opts.MaxDecimalDigits;
 			delete opts.MaxDecimalDigits;
 		}
+		var fmt = false;
+		var ufmt = false;
+		if ('commafy' in opts && opts.commafy) {
+			if ('format' in callbacks && typeof callbacks.format === 'function') {
+				console.log('using user format function');
+				fmt = function (value, cursorPos) {
+					var val = commafyCursorPos(value, cursorPos);
+					return callbacks.format(val.value, val.cursorPos);
+				};
+			} else {
+				console.log({ format: opts });
+				fmt = commafyCursorPos;
+			}
+			if ('unformat' in callbacks && typeof callbacks.unformat === 'function') {
+				console.log('using user unformat function');
+				ufmt = function (value, cursorPos) {
+					var val = uncommafyCursorPos(value, cursorPos);
+					return callbacks.unformat(val.value, val.cursorPos);
+				};
+			} else {
+				console.log({ unformat: opts });
+				ufmt = uncommafyCursorPos;
+			}
+		} else {
+			if ('format' in callbacks) fmt = callbacks.format;
+			if ('unformat' in callbacks) ufmt = callbacks.unformat;
+		}
+
 		return new ManagedInput(input, mergeCallbacks(callbacks, {
 			validate: function (value) {
 				value = value.toString();
@@ -371,8 +438,10 @@ return /******/ (function(modules) { // webpackBootstrap
 				if (maxDecimal && parts[4] && parts[4].length > maxDecimal) throw new Error(`Decimal part must be no more than '${ maxDecimal }' digits`);
 				if (parts[3] && !parts[4]) return false;
 				return true;
-			}
-		}, 'FloatInput'), opts);
+			},
+			format: fmt,
+			unformat: ufmt
+		}, 'FloatInput', ['format', 'unformat']), opts);
 	};
 
 	const DollarInput = function (input, callbacks = {}, opts = {}) {
