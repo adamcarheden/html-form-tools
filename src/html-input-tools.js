@@ -265,8 +265,34 @@ class ManagedInput {
 
 }
 
-const commafy = function(value) {
-	value = value.toString()
+const commafy = function(num, cursorPos) {
+	let value
+	if (arguments.length < 2) cursorPos = 0
+	switch (typeof num) {
+	case 'number':
+		value = num.toString()
+		break
+	case 'symbol':
+	case 'string':
+		value = num.toString()
+		// Don't bother with things that don't look like numbers
+		if (!value.match(/^\s*\d+(\.\d*)?\s*$/)) {
+			if (arguments.length < 2) return num
+			return {value: num, cursorPos: cursorPos}
+		}
+		// trim, adjusting cursorPos
+		let before = value.substring(0,cursorPos)
+		let after = value.substring(cursorPos).trim()
+		if (before.trim().length === 0) {
+			cursorPos -= before.length
+			before = ''
+		}
+		value = before+after
+		break
+	default:
+		if (arguments.length < 2) return num
+		return {value: num, cursorPos: cursorPos}
+	}
 	var parts
 	if (value.match(/\./)) {
 		parts = value.split(/\./,2)
@@ -274,34 +300,31 @@ const commafy = function(value) {
 		parts = [value]
 	}
 	var res = []
+	var moveCursor = 0
 	for (var i=0; i<parts[0].length; i++) {
-		if (i !== 0 && i % 3 === 0) res.unshift(',')
-		res.unshift(parts[0].charAt(parts[0].length-i-1))
-	}
-	parts[0] = res.join('')
-	return parts.join('.')
-}
-const commafyCursorPos = function(value, cursorPos) {
-	var val = commafy(value)
-	if (typeof cursorPos !== 'undefined') {
-		var i=0 // index to formatted string
-		var j=0 // index to unformatted string
-		while (i<cursorPos && j < val.length) {
-			if (val.charAt(j) !== ',') i++
-			j++
+		let pos=parts[0].length-i-1
+		if (i !== 0 && i % 3 === 0) {
+			res.unshift(',')
+			if (pos < cursorPos) moveCursor++
 		}
-		cursorPos += j-i
+		res.unshift(parts[0].charAt(pos))
 	}
-	console.log({com: 'mma', value: value, val: val, cursorPos: cursorPos })
-	return {value: val, cursorPos: cursorPos}
+	cursorPos += moveCursor
+	parts[0] = res.join('')
+	value = parts.join('.')
+	if (arguments.length < 2) {
+		return value
+	} else {
+		return {value: value, cursorPos: cursorPos }
+	}
 }
-const uncommafyCursorPos = function(value, cursorPos) {
+const uncommafy = function(value, cursorPos) {
 	var val = value.replace(/,/g,'')
-	if (typeof cursorPos !== 'undefined') {
-		cursorPos -= value.substring(0,cursorPos+1).replace(/[^,]/g,'').length
+	if (arguments.length >= 2) {
+		cursorPos -= value.substring(0,cursorPos).replace(/[^,]/g,'').length
+		return {value: val, cursorPos: cursorPos}
 	}
-	console.log({un:'comma', value: value, val: val, cursorPos: cursorPos })
-	return {value: val, cursorPos: cursorPos}
+	return val
 }
 
 const mergeCallbacks = function(src, tgt, name, skip = []) {
@@ -317,57 +340,60 @@ const mergeCallbacks = function(src, tgt, name, skip = []) {
 }
 
 const IntegerInput = function(input, callbacks = {}, opts = {}) {
+	let newOpts = JSON.parse(JSON.stringify(opts))
+	if (!('commafy' in newOpts)) newOpts.commafy = true
 	var maxDigits = false
-	if ('MaxDigits' in opts) {
-		maxDigits = opts.MaxDigits
-		delete opts.MaxDigits
+	if ('MaxDigits' in newOpts) {
+		maxDigits = newOpts.MaxDigits
+		delete newOpts.MaxDigits
 	}
+
+	var fmt = false
+	var ufmt = false
+	if (newOpts.commafy) {
+		fmt = stackFormats(callbacks, 'format', function(value, cursorPos) { return commafy(value, cursorPos) })
+		ufmt = stackFormats(callbacks, 'unformat', function(value, cursorPos) { return uncommafy(value, cursorPos) })
+	} else {
+		if ('format' in callbacks) fmt = callbacks.format
+		if ('unformat' in callbacks) ufmt = callbacks.unformat
+	}
+	delete newOpts.commafy
+
 	return new ManagedInput(input, mergeCallbacks(callbacks, {
 		validate: function(val) {
 			if (!val.match(/^[0-9]*$/)) throw new Error('must be a integer')
 			if (maxDigits && val.length > maxDigits) throw new Error(`Must be at most ${maxDigits} digits`)
 			return true
 		},
-	}, 'IntegerInput'), opts)
+		format: fmt,
+		unformat: ufmt,
+	}, 'IntegerInput'), newOpts)
 }
 
 const FloatInput = function(input, callbacks = {}, opts = {}) {
-	if (!('commafy' in opts)) opts.commafy = true
+	let newOpts = JSON.parse(JSON.stringify(opts))
+	if (!('commafy' in newOpts)) newOpts.commafy = true
 
 	var maxMantissa = false
-	if ('MaxMantissaDigits' in opts) {
-		maxMantissa = opts.MaxMantissaDigits
-		delete opts.MaxMantissaDigits
+	if ('MaxMantissaDigits' in newOpts) {
+		maxMantissa = newOpts.MaxMantissaDigits
+		delete newOpts.MaxMantissaDigits
 	}
 	var maxDecimal = false
-	if ('MaxDecimalDigits' in opts) {
-		maxDecimal = opts.MaxDecimalDigits
-		delete opts.MaxDecimalDigits
+	if ('MaxDecimalDigits' in newOpts) {
+		maxDecimal = newOpts.MaxDecimalDigits
+		delete newOpts.MaxDecimalDigits
 	}
 	var fmt = false
 	var ufmt = false
-	if ('commafy' in opts && opts.commafy) {
-		if ('format' in callbacks && typeof callbacks.format === 'function') {
-			fmt = function(value, cursorPos) { 
-				var val = commafyCursorPos(value, cursorPos)
-				return callbacks.format(val.value, val.cursorPos) 
-			}
-		} else {
-			fmt = commafyCursorPos
-		}
-		if ('unformat' in callbacks && typeof callbacks.unformat === 'function') {
-			ufmt = function(value, cursorPos) { 
-				var val = uncommafyCursorPos(value, cursorPos)
-				return callbacks.unformat(val.value, val.cursorPos) 
-			}
-		} else {
-			ufmt = uncommafyCursorPos
-		}
+	if (newOpts.commafy) {
+		fmt = stackFormats(callbacks, 'format', function(value, cursorPos) { return commafy(value, cursorPos) })
+		ufmt = stackFormats(callbacks, 'unformat', function(value, cursorPos) { return uncommafy(value, cursorPos) })
 	} else {
 		if ('format' in callbacks) fmt = callbacks.format
 		if ('unformat' in callbacks) ufmt = callbacks.unformat
 	}
-
+	delete newOpts.commafy
 
 	return new ManagedInput(input, mergeCallbacks(callbacks, {
 		validate: function(value) {
@@ -383,11 +409,25 @@ const FloatInput = function(input, callbacks = {}, opts = {}) {
 		},
 		format: fmt,
 		unformat: ufmt,
-	}, 'FloatInput', ['format','unformat']), opts)
+	}, 'FloatInput', ['format','unformat']), newOpts)
+}
+
+const stackFormats = function(callbacks, name, formatter) {
+	let fun
+	if (name in callbacks && typeof callbacks[name] === 'function') {
+		fun = function(value, cursorPos) { 
+			var fmtd = formatter(value, cursorPos)
+			return callbacks[name](fmtd.value, fmtd.cursorPos) 
+		}
+	} else {
+		fun = formatter
+	}
+	return fun
 }
 
 const DollarInput = function(input, callbacks = {}, opts = {}) {
-	if (!('MaxDecimalDigits' in opts)) opts.MaxDecimalDigits = 2
+	let newOpts = JSON.parse(JSON.stringify(opts))
+	if (!('MaxDecimalDigits' in newOpts)) newOpts.MaxDecimalDigits = 2
 	return FloatInput(input, mergeCallbacks(callbacks, {
 		unformat: function(value, cursorPos) {
 			value = value.toString()
@@ -401,7 +441,7 @@ const DollarInput = function(input, callbacks = {}, opts = {}) {
 			var res = {value: '$'+value, cursorPos: (cursorPos === false) ? false : cursorPos+1 }
 			return res
 		}
-	}, 'DollarInput'), opts)
+	}, 'DollarInput'), newOpts)
 }
 
 module.exports = {
@@ -409,5 +449,8 @@ module.exports = {
 	IntegerInput: IntegerInput,
 	FloatInput: FloatInput,
 	DollarInput: DollarInput,
-	util: { commafy: commafy },
+	util: {
+		commafy: commafy,
+		uncommafy: uncommafy,
+	},
 }

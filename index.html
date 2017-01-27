@@ -38,7 +38,6 @@
 		var traditional = numeric(this.traditional)
 		if (!(age && traditional)) return
 		var max = 70
-		console.log('age limit')
 		if (age > max && traditional > 0) throw new Error("You may not contribute to a traditional IRA because you're older than "+max)
 	}
 
@@ -176,7 +175,7 @@
 <h1>HTML Input Tools</h1>
 
 <p>
-In 2017, the <a href='https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-ira-contribution-limits'>IRS</a> lets you contribute up to $5,500 to your Individual Retirement Accounts (IRA). People over 55 can contribute an additional $1000 for a total of $6,500.
+In 2017, the <a href='https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-ira-contribution-limits'>IRS</a> lets you contribute up to $5,500 to your Individual Retirement Accounts (IRA). People over 50 can contribute an additional $1000 for a total of $6,500.
 </p>
 <p>
 There are two types of IRAs: Traditional and Roth. The contribution limits apply to the total contributions you make to all of your IRAs of either type. If you're over 70, you're not allowed to contribute to a Traditional IRA, but you may still contribute to a Roth.
