@@ -1,0 +1,28 @@
+<html>
+<head>
+<script type='text/javascript' src='html-form-tools.js'></script>
+<script>
+	window.addEventListener('load', function(event) {
+		window['html-form-tools'].ManagedInput('money', {
+			validate: function(val) {
+
+				// Invalid value: Input will not be allowed
+				if (!val.match(/^\d*(\.\d*)?$/)) throw new Error('invalid chars')
+
+				// Incomplete value: Input will be allowed but valid callbacks won't fire
+				if (val.length === 0 || val.match(/\.$/)) return false
+
+				// Valid value: Valid callbacks will fire
+				return true // The value is a valid number
+
+			},
+			format: function(val) { return '$'+val },
+			unformat: function(val) { return val.replace(/^\$/,'') },
+		})
+	})
+</script>
+</head>
+<body>
+	<input id='money'/>
+</body>
+</html>

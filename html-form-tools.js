@@ -111,7 +111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// Events we intercept
 	const events = {
-		HTMLFormElement: {
+		HTMLInputElement: {
 			/*
 	  		keydown: function(e) {
 	  			this.debug(`keydown: value='${this.input.value}'`)
@@ -176,9 +176,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (!(typeof this.input === 'object')) {
 				throw Error(`Expected an object or the name of an element to manage, but got a '${ typeof this.input }'`);
 			}
-			if (!(this.input instanceof HTMLFormElement)) {
+			if (!(this.input instanceof HTMLInputElement)) {
 				// eslint-disable-line no-undef
-				throw Error(`Expected an HTMLFormElement, got a '${ this.input.constructor.name }'`);
+				throw Error(`Expected an HTMLInputElement, got a '${ this.input.constructor.name }'`);
 			}
 
 			if ('format' in callbacks && !('unformat' in callbacks)) {
@@ -508,7 +508,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	module.exports = {
-		ManagedInput: ManagedInput,
+		ManagedInput: function (input, callbacks, opts) {
+			return new ManagedInput(input, callbacks, opts);
+		},
 		IntegerInput: IntegerInput,
 		FloatInput: FloatInput,
 		DollarInput: DollarInput,

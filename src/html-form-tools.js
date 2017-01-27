@@ -55,7 +55,7 @@ const defaultCallbacks = {
 
 // Events we intercept
 const events = {
-	HTMLFormElement: {
+	HTMLInputElement: {
 /*
 		keydown: function(e) {
 			this.debug(`keydown: value='${this.input.value}'`)
@@ -120,8 +120,8 @@ class ManagedInput {
 		if (!(typeof this.input === 'object')) {
 			throw Error(`Expected an object or the name of an element to manage, but got a '${typeof this.input}'`)
 		}
-		if (!(this.input instanceof HTMLFormElement)) { // eslint-disable-line no-undef
-			throw Error(`Expected an HTMLFormElement, got a '${this.input.constructor.name}'`)
+		if (!(this.input instanceof HTMLInputElement)) { // eslint-disable-line no-undef
+			throw Error(`Expected an HTMLInputElement, got a '${this.input.constructor.name}'`)
 		}
 
 		if (('format' in callbacks) && !('unformat' in callbacks)) {
@@ -445,7 +445,7 @@ const DollarInput = function(input, callbacks = {}, opts = {}) {
 }
 
 module.exports = {
-	ManagedInput: ManagedInput,
+	ManagedInput: function(input, callbacks, opts) { return new ManagedInput(input, callbacks, opts) },
 	IntegerInput: IntegerInput,
 	FloatInput: FloatInput,
 	DollarInput: DollarInput,
