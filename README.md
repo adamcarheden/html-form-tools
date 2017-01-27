@@ -45,9 +45,21 @@ HTML Form Tools is a framework for making user-input user-friendly. Specifically
 ## API
 ### ManagedInput()
 Arguments:
-1. input - The input to manage. This can be the actual [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement), or a string representing either the id of the element or a query selector that will return it as the first item.
+1. Input - The input to manage. This can be the actual [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement), or a string representing either the id of the element or a query selector that will return it as the first item.
 
 2. Callbacks - An object with functions as values and any combination of the following keys:
+	* **format**
+
+	Params:
+		* value - The validated, unformatted value of the input field
+		* cursorPos - The position of the cursor prior to formatting
+
+	Should return one of the following:
+		* A String suitable to assign to input.value
+		* An object with the keys:
+			* value: same as above
+			* cursorPos: The offset in the formatted string of the cursor. This is optional, but without it the cursor will be moved to the end of the input with each keystroke.
+
 	* **unformat** Should strip formatting applied by the format() callback and return the stripped value.
 
 	Params:
@@ -60,48 +72,46 @@ Arguments:
 			* value: same as above
 			* cursorPos: The offset in the unformatted string of the cursor. This is optional, but without it the cursor will be moved to the end of the input with each keystroke.
 
+	* **validate**
 
-```
-	// Should:
-	// * return true if the value is valid
-	// * return false if the value is invalid but an acceptable intermediate value
-	//   (i.e. '1.' is not a valid decimal number but you can't type '1.0' witout first typing '1.')
-	// * throw an exception if the value is invalid and input should be prevented if possible
-	// Params:
-	// * value - The value of the input field with formatting stripped by unformat()
-	validate: false,
+	Params:
+		* value - The value of the input field with formatting stripped by unformat()
 
-	// Params:
-	// * value     - The validated, unformatted value of the input field
-	// * cursorPos - The position of the cursor prior to formatting
-	// Should return one of the following:
-	// * A String suitable to assign to input.value
-	//  or
-	// * An object with the keys
-	//   * value: same as above
-	//   * cursorPos: The offset in the formatted string of the cursor
-  //     This is optional, but without it the cursor will be moved to the end of the input with each keystroke
-	format: false,
+	Should:
+		* return true if the value is valid
+		* return false if the value is invalid but an acceptable intermediate value (i.e. '1.' is not a valid number but you can't type '1.0' witout first typing '1.'). Formatting is not reapplied to intermediate values, but previous formatting is not stripped either (i.e. the input behaves as if html-form-tools isn't operating.)
+		* throw an exception if the value is invalid and input should be prevented. Note: It's not always possible/desirable to prevent intput. For example, preventing copy-n-pasted values is confusing for the user.
 
-	// Should assign the value to some backend storage
-	// I recommend validating with respect to other related data and signaling the user
-	// if the new value would put your dataset in an invalid state, but that sort of logic here would
-	// be a poorly placed and coupling of concerns.
-	// Params:
-	// * value - The validated, unformatted value of the input field
-	sync: false,
+	* **sync** Called when the input looses focus (onblur event) and the input is valid. Use this callback to write the value to some back-end storage or validate it with respect to other input fields.
 
-	// Called when the input changes and the value is invalid
-	// We prevent this when possible, but we can't stop the user from pasting it in
-	invalid: false,
+	Params:
+		* value - The validated, unformatted value of the input field
 
-	// Called when the input changes and the value is invalid but allowed (intermediate)
-	intermediate: false,
+	Return: ignored
 
-	// Called when the input changes and the value is valid
-	valid: false,
-```
+	* **invalid** Called when the input changes and the value is invalid. We prevent this when possible, but we can't stop the user from copy-n-pasting in invalid data.
 
+	Params:
+		* unformattedValue - The new value with formatting stipped.
+		* oldValue - The formatted value of the field prior to the keystroke.
+		* newValue - The new value after the keystroke but before formatting is applied. This is what the new value would be even when input is disallowed by 'validate'.
+		* rawValue - The 'value' property of the HTMLInputElement.
+
+	* **intermediate** Called when the input changes and the value is invalid but allowed (i.e. 'valid' returns false)
+
+	Params:
+		* unformattedValue - The new value with formatting stipped.
+		* oldValue - The formatted value of the field prior to the keystroke.
+		* newValue - The new value after the keystroke but before formatting is applied. This is what the new value would be even when input is disallowed by 'validate'.
+		* rawValue - The 'value' property of the HTMLInputElement.
+
+	* **valid** Called when the input changes and the value is valid.
+
+	Params:
+		* unformattedValue - The new value with formatting stipped.
+		* oldValue - The formatted value of the field prior to the keystroke.
+		* newValue - The new value after the keystroke but before formatting is applied. This is what the new value would be even when input is disallowed by 'validate'.
+		* rawValue - The 'value' property of the HTMLInputElement.
 
 3. Options - An object with any combination of the following keys:
 	* debug      (boolean) - Print debugging to the JavaScript console. Useful for debugging your callback functions. Default: false
