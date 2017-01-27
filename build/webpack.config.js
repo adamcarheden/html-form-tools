@@ -3,11 +3,11 @@ const path = require('path')
 const projectRoot = path.resolve(__dirname+"/../")
 
 module.exports = {
-  entry: projectRoot+'/src/html-input-tools.js',
+  entry: projectRoot+'/src/html-form-tools.js',
   output: {
     path: projectRoot,
-    filename: 'html-input-tools.js',
-    library: 'html-input-tools',
+    filename: 'html-form-tools.js',
+    library: 'html-form-tools',
     libraryTarget: 'umd',
     umdNamedDefine: true
   },

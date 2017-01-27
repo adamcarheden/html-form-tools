@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>html-input-tools</title>
+<title>html-form-tools</title>
 <style type='text/css'>
 .err input {
 	background-color: rgba(255,0,0,.15);
@@ -17,9 +17,9 @@
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.18.1/babel.min.js"></script>
 <script src='../data-true/DataTrue.js'></script>
-<script type='text/javascript' src='html-input-tools.js'></script>
+<script type='text/javascript' src='html-form-tools.js'></script>
 <script>
-	const commafy = window['html-input-tools'].util.commafy
+	const commafy = window['html-form-tools'].util.commafy
 
 	// DataTrue is a library for validating sets of JavaScript objects
 	// We'll use it to define the back-end date represented by this form
@@ -149,19 +149,19 @@
 	// Once the document loads...
 	window.addEventListener('load', function(event) {
 
-		// Use HTMLInputTools to limit input into each field
+		// Use HTMLFormTools to limit input into each field
 		// and call out set() function when the user enters
 		// potentially valid values.
-		const HTMLInputTools = window['html-input-tools']
-		inputs.age.mgr = HTMLInputTools.IntegerInput('age', {
+		const HTMLFormTools = window['html-form-tools']
+		inputs.age.mgr = HTMLFormTools.IntegerInput('age', {
 			sync: function(val) { set() },
 			valid: function(val) { set() },
 		},{MaxDigits: 2, debug: false})
-		inputs.roth.mgr = HTMLInputTools.DollarInput('roth', {
+		inputs.roth.mgr = HTMLFormTools.DollarInput('roth', {
 			sync: function(val) { set() },
 			valid: function(val) { set() },
 		},{debug: false})
-		inputs.traditional.mgr = HTMLInputTools.DollarInput('traditional', {
+		inputs.traditional.mgr = HTMLFormTools.DollarInput('traditional', {
 			sync: function(val) { set() },
 			valid: function(val) { set() },
 		},{debug: false})
@@ -172,13 +172,13 @@
 
 </head>
 <body>
-<h1>HTML Input Tools</h1>
+<h1>HTML Form Tools Example</h1>
 
 <p>
 In 2017, the <a href='https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-ira-contribution-limits'>IRS</a> lets you contribute up to $5,500 to your Individual Retirement Accounts (IRA). People over 50 can contribute an additional $1000 for a total of $6,500.
 </p>
 <p>
-There are two types of IRAs: Traditional and Roth. The contribution limits apply to the total contributions you make to all of your IRAs of either type. If you're over 70, you're not allowed to contribute to a Traditional IRA, but you may still contribute to a Roth.
+There are two types of IRAs: Traditional and Roth. The contribution limits apply to the total contributions you make to all of your IRAs of either type. If you're over 70, you're not allowed to contribute to a Traditional IRA but you may still contribute to a Roth.
 </p>
 <p>
 The form below calculates your total IRA contribution and lets you know if there's a problem with what you type. Note that it both formats your inputs with '$' and commas and prevents you from typing sensless values, such as non-numeric characters or an age of more than 2 digits (sorry, Methuselah, you'll need an accountant instead).
@@ -214,13 +214,6 @@ The form below calculates your total IRA contribution and lets you know if there
 </tr>
 
 </table>
-<!--
-	<table>
-	<tr id='intRow'><td>Integer</td><td><input id='int'/></td><td class='valid'></td><td class='insync'></td></tr>
-	<tr id='decRow'><td>Decimal</td><td><input id='dec'/></td><td class='valid'></td><td class='insync'></td></tr>
-	<tr id='moneyRow'><td>Money  </td><td><input id='money'></td><td class='valid'></td><td class='insync'></td></tr>
-	</table>
--->
 </body>
 </html>
 

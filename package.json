@@ -1,8 +1,8 @@
 {
-  "name": "html-input-tools",
+  "name": "html-form-tools",
   "version": "1.0.0",
-  "description": "Framework for fine-grained control over allowed user input into HTML form fields.",
-  "main": "html-input-tools.js",
+  "description": "Framework for limiting, validating and formatting user input into HTML form fields.",
+  "main": "html-form-tools.js",
   "scripts": {
     "build": "webpack --config build/webpack.config.js",
     "lint": "eslint --ext .js src",

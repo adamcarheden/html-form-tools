@@ -2,11 +2,11 @@
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
 	else if(typeof define === 'function' && define.amd)
-		define("html-input-tools", [], factory);
+		define("html-form-tools", [], factory);
 	else if(typeof exports === 'object')
-		exports["html-input-tools"] = factory();
+		exports["html-form-tools"] = factory();
 	else
-		root["html-input-tools"] = factory();
+		root["html-form-tools"] = factory();
 })(this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -111,7 +111,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	// Events we intercept
 	const events = {
-		HTMLInputElement: {
+		HTMLFormElement: {
 			/*
 	  		keydown: function(e) {
 	  			this.debug(`keydown: value='${this.input.value}'`)
@@ -176,9 +176,9 @@ return /******/ (function(modules) { // webpackBootstrap
 			if (!(typeof this.input === 'object')) {
 				throw Error(`Expected an object or the name of an element to manage, but got a '${ typeof this.input }'`);
 			}
-			if (!(this.input instanceof HTMLInputElement)) {
+			if (!(this.input instanceof HTMLFormElement)) {
 				// eslint-disable-line no-undef
-				throw Error(`Expected an HTMLInputElement, got a '${ this.input.constructor.name }'`);
+				throw Error(`Expected an HTMLFormElement, got a '${ this.input.constructor.name }'`);
 			}
 
 			if ('format' in callbacks && !('unformat' in callbacks)) {
