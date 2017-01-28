@@ -48,11 +48,11 @@ Arguments:
 1. Input - The input to manage. This can be the actual [HTMLInputElement](https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement), or a string representing either the id of the element or a query selector that will return it as the first item.
 
 2. Callbacks - An object with functions as values and any combination of the following keys:
-	* **format**
+	* **format** Applies formatting to the value, such as adding commas.
 
 	Params:
 		* value - The validated, unformatted value of the input field
-		* cursorPos - The position of the cursor prior to formatting
+		* cursorPos - The position of the cursor prior to formatting as returned by [selectionStart](https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Property/selectionStart)
 
 	Should return one of the following:
 		* A String suitable to assign to input.value
@@ -119,8 +119,25 @@ Arguments:
 	* ignoreAlt  (boolean) - Ignore keystrokes if alt is pressed. This is usually what you want to do. Default: true
 
 ### IntegerInput()
+
+Arguments are the same as ManagedInput, but validate is defined for you. Additionally Options may include:
+* commafy - Format by adding commas. (default: true)
+* MaxDigits - the maxium number of digits the user is allowed to type. (default: undefined/no limit)
+
 ### FloatInput()
+
+Arguments are the same as ManagedInput, but validate is defined for you. Additionally Options may include:
+* commafy - Format by adding commas. (default: true)
+* MaxMantissaDigits - The maximum number of digits the user is allowed to type to the left of the decimal point. (default: undefined/no limit)
+* MaxDecimalDigits - The maximum number of digits the user is allowed to type to the right of the decimal point. (default: undefined/no limit)
+
 ### DollarInput()
+Like FloatInput but formats by adding a dollar sign to the front. Arguments are the same as ManagedInput, but validate is defined for you. Additionally Options may include:
+* commafy - Format by adding commas. (default: true)
+* MaxMantissaDigits - The maximum number of digits the user is allowed to type to the left of the decimal point. (defualt: undefined/no limit)
+* MaxDecimalDigits - The maximum number of digits the user is allowed to type to the right of the decimal point. (default: 2)
+
+__Note: You may define the format/unformat callbacks even if you let IntegerInput, FloatInput or DollarInput commafy for you. Your callbacks will receive the value with commas added.__
 
 ## DataTrue Integration
 HTML Form Tools was written at the same time as [DataTrue](https://github.com/adamcarheden/data-true). They're independent, but work well together. Use HTML Form Tools to validate single fields and control input. Use DataTrue to validate data across multiple fields.
