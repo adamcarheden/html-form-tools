@@ -111,7 +111,7 @@ Like FloatInput but formats by adding a dollar sign to the front. Arguments are 
 __Note: You may define the format/unformat callbacks even if you let IntegerInput, FloatInput or DollarInput commafy for you. Your callbacks will receive the value with commas added.__
 
 ##  Integration
-HTML Form Tools was written at the same time as [](https://github.com/adamcarheden/schema-sure). They're independent, but work well together. Use HTML Form Tools to validate single fields and control input. Use SchemaSure to validate data across multiple fields.
+HTML Form Tools was written to complement [SchemaSure](https://github.com/adamcarheden/schema-sure). They're independent, but work well together. Use HTML Form Tools to validate single fields and control input. Use [SchemaSure]((https://github.com/adamcarheden/schema-sure) to validate data across multiple fields.
 
 ## Current Status
 Beta. Seems to work well, but needs unit testing and a larger library of pre-defined input types, such as e-mail, phone number, zip code, ip address, etc.
