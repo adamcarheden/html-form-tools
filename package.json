@@ -6,24 +6,26 @@
   "scripts": {
     "build": "webpack --config build/webpack.config.js",
     "lint": "eslint --ext .js src",
-		"lint-examples": "eslint --ext .js --ext .html examples/simple.html",
+    "lint-examples": "eslint --ext .js --ext .html examples/simple.html",
     "test": "echo \"Error: no test specified\" && exit 1",
-		"doc": "npm run lint-examples && rm -f README.md && node doc/makedoc.js doc/README.md.in > README.md && chmod 444 README.md"
+    "doc": "npm run lint-examples && rm -f README.md && node doc/makedoc.js doc/README.md.in > README.md && chmod 444 README.md"
   },
   "author": {
     "name": "Adam Carheden",
     "email": "adam.carheden@gmail.com"
   },
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/adamcarheden/html-form-tools"
-	},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adamcarheden/html-form-tools"
+  },
   "license": "GPL-3.0",
   "devDependencies": {
-    "babel-core": "^6.18.2",
+    "babel-core": "^6.22.1",
     "babel-eslint": "^7.1.0",
-    "babel-loader": "^6.2.7",
+    "babel-loader": "^6.2.10",
+    "babel-preset-babili": "0.0.10",
     "babel-preset-es2015": "^6.18.0",
+    "babili-webpack-plugin": "0.0.9",
     "eslint": "^3.9.1",
     "eslint-config-standard": "^6.2.1",
     "eslint-friendly-formatter": "^2.0.6",

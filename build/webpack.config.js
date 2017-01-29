@@ -28,7 +28,10 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel',
         include: projectRoot,
-        exclude: /node_modules/
+        exclude: /node_modules/,
+				query: {
+					presets: ['babili']
+				}
       },
       {
         test: /\.css$/,
@@ -36,16 +39,4 @@ module.exports = {
       }
     ]
   },
-	/*
-  plugins: [
-    new webpack.optimize.UglifyJsPlugin( {
-      minimize : true,
-      sourceMap : false,
-      mangle: true,
-      compress: {
-        warnings: false
-      }
-    } )
-  ]
-	*/
 }
