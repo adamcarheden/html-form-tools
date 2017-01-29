@@ -15,16 +15,16 @@
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.18.1/babel.min.js"></script>
-<script src='../../data-true/DataTrue.js'></script>
+<script src='../../schema-sure/SchemaSure.js'></script>
 <script type='text/javascript' src='html-form-tools.js'></script>
 <script>
 	const commafy = window['html-form-tools'].util.commafy
 
-	// DataTrue is a library for validating sets of JavaScript objects
+	// SchemaSure is a library for validating sets of JavaScript objects
 	// We'll use it to define the back-end date represented by this form
-	// https://github.com/adamcarheden/data-true
-	const DataTrue = window['DataTrue'].default
-	const schema = new DataTrue()
+	// https://github.com/adamcarheden/schema-sure
+	const SchemaSure = window['SchemaSure'].default
+	const schema = new SchemaSure()
 	const numeric = function(val) {
 		if (typeof val === 'undefined') return false
 		if (val.toString().trim().length === 0) return false
@@ -126,7 +126,7 @@
 			document.getElementById('left').innerHTML  = '$'+commafy(ira.limit - ira.contribution)
 		} catch(e) {
 			// If our validation functions defined above fail, 
-			// DataTrue will give us errors from all of them to distribute to our
+			// SchemaSure will give us errors from all of them to distribute to our
 			// error fields in HTML
 			var errs = e.exceptions.get(ira)
 			Object.keys(errs).forEach(function(prop) {
