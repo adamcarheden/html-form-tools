@@ -8,6 +8,9 @@ HTML Form Tools is a framework for making user-input user-friendly. Specifically
 ## Live Demo
 (Coming soon)
 
+## Install
+
+
 ## Usage
 
 ```html
