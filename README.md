@@ -9,7 +9,13 @@ HTML Form Tools is a framework for making user-input user-friendly. Specifically
 (Coming soon)
 
 ## Install
-
+``` bash
+npm install html-form-tools --save
+```
+or
+``` bash
+git clone https://github.com/adamcarheden/html-form-tools.git
+```
 
 ## Usage
 
