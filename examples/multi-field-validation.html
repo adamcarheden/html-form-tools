@@ -18,21 +18,21 @@
 <script src='../../schema-sure/SchemaSure.js'></script>
 <script type='text/javascript' src='html-form-tools.js'></script>
 <script>
-	const commafy = window['html-form-tools'].util.commafy
+	var commafy = window['html-form-tools'].util.commafy
 
 	// SchemaSure is a library for validating sets of JavaScript objects
 	// We'll use it to define the back-end date represented by this form
 	// https://github.com/adamcarheden/schema-sure
-	const SchemaSure = window['SchemaSure'].default
-	const schema = new SchemaSure()
-	const numeric = function(val) {
+	var SchemaSure = window['SchemaSure'].default
+	var schema = new SchemaSure()
+	var numeric = function(val) {
 		if (typeof val === 'undefined') return false
 		if (val.toString().trim().length === 0) return false
 		val = parseInt(val)
 		if (isNaN(val)) return false
 		return val
 	}
-	const ageLimit = function() {
+	var ageLimit = function() {
 		var age = numeric(this.age)
 		var traditional = numeric(this.traditional)
 		if (!(age && traditional)) return
@@ -151,7 +151,7 @@
 		// Use HTMLFormTools to limit input into each field
 		// and call out set() function when the user enters
 		// potentially valid values.
-		const HTMLFormTools = window['html-form-tools']
+		var HTMLFormTools = window['html-form-tools']
 		inputs.age.mgr = HTMLFormTools.IntegerInput('age', {
 			sync: function(val) { set() },
 			valid: function(val) { set() },

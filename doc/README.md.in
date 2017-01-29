@@ -6,7 +6,8 @@ HTML Form Tools is a framework for making user-input user-friendly. Specifically
 * Validate values as the user types to provide instant feedback
 
 ## Live Demo
-(Coming soon)
+
+[HTML Form Tools / Schema Sure Example](https://jsfiddle.net/adamcarheden/kr4cdhde/)
 
 ## Install
 ``` bash
