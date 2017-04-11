@@ -93,6 +93,7 @@ const events = {
 }
 
 var defaultOpts = {
+	defaultValue: null,
 	ignoreCtrl: true,
 	ignoreAlt: true,
 	debug: false,
@@ -152,7 +153,9 @@ class ManagedInput {
 		Object.keys(defaultOpts).forEach((opt) => {
 			this.opts[opt] = (opt in opts) ? opts[opt] : defaultOpts[opt]
 		})
-
+		if (this.opts.defaultValue !== null) {
+			this.input.value = this.opts.defaultValue
+		}
 		this.validateAndFormat()
 
 		this.inputType = this.input.constructor.name
