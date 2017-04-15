@@ -45,7 +45,7 @@ Arguments:
 
 	Params:
 		* value - the formatted value
-		* value - the position of the cursor prior to unformatting
+		* cursorPos - the position of the cursor prior to unformatting
 
 	Should return one of the following:
 		* The value with formatting removed

@@ -37,7 +37,7 @@ const defaultCallbacks = {
 	// Should assign the value to some backend storage
 	// I recommend validating with respect to other related data and signaling the user
 	// if the new value would put your dataset in an invalid state, but that sort of logic here would
-	// be a poorly placed and coupling of concerns.
+	// be poorly placed and coupling of concerns.
 	// Params:
 	// * value - The validated, unformatted value of the input field
 	sync: false,
