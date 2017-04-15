@@ -2,8 +2,9 @@
 <head>
 <script type='text/javascript' src='html-form-tools.js'></script>
 <script>
+	var money
 	window.addEventListener('load', function(event) {
-		window['html-form-tools'].ManagedInput('money', {
+		money = window['html-form-tools'].ManagedInput('money', {
 			validate: function(val) {
 
 				// Invalid value: Input will not be allowed
@@ -23,6 +24,7 @@
 </script>
 </head>
 <body>
-	<input id='money'/>
+	<input id='money' value='1'/>
+	<button onclick='money.set(1000000)'>Show me the money</button>
 </body>
 </html>

@@ -165,6 +165,11 @@ class ManagedInput {
 
 	}
 
+	set(value) {
+		this.input.value = value
+		this.validateAndFormat()
+	}
+
 	unformat(value, cursorPos) {
 		if (typeof value === 'undefined') value = this.input.value
 		if (this.callbacks.unformat) return this.callbacks.unformat(value, cursorPos)
