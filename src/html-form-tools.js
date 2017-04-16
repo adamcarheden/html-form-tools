@@ -200,14 +200,14 @@ class ManagedInput {
 			this.debug(`Refusing to sync invalid value ${value}`)
 		}
 	}
-	invalid(unformattedValue, oldValue, newValue, rawValue) {
-		if (this.callbacks.invalid) this.callbacks.invalid(unformattedValue, oldValue, newValue, rawValue)
+	invalid(unformattedValue, oldValue, newValue) {
+		if (this.callbacks.invalid) this.callbacks.invalid(unformattedValue, oldValue, newValue, this.input)
 	}
-	intermediate(unformattedValue, oldValue, newValue, rawValue) {
-		if (this.callbacks.intermediate) this.callbacks.intermediate(unformattedValue, oldValue, newValue, rawValue)
+	intermediate(unformattedValue, oldValue, newValue) {
+		if (this.callbacks.intermediate) this.callbacks.intermediate(unformattedValue, oldValue, newValue, this.input)
 	}
-	valid(unformattedValue, oldValue, newValue, rawValue) {
-		if (this.callbacks.valid) this.callbacks.valid(unformattedValue, oldValue, newValue, rawValue)
+	valid(unformattedValue, oldValue, newValue) {
+		if (this.callbacks.valid) this.callbacks.valid(unformattedValue, oldValue, newValue, this.input)
 	}
 
 	ignoreKey(evnt) {
@@ -246,7 +246,7 @@ class ManagedInput {
 		try {
 			if (!this.validate(unformatted.value)) {
 				this.debug(`'${unformatted.value}': acceptable intermediate value, formatting delayed`)
-				this.intermediate(unformatted.value, oldValue, newValue, this.input.value)
+				this.intermediate(unformatted.value, oldValue, newValue)
 			} else {
 				var formatted = this.format(unformatted.value, unformatted.cursorPos)
 				if (typeof formatted !== 'object') formatted = { value: formatted, cursorPos: false }
@@ -256,12 +256,12 @@ class ManagedInput {
 				if (formatted.cursorPos) {
 					this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos)
 				}
-				this.valid(unformatted.value, oldValue, newValue, this.input.value)
+				this.valid(unformatted.value, oldValue, newValue)
 			}
 		} catch (ex) {
 			this.debug(`Invalid value '${unformatted.value}': "${ex.message}". We'll prevent input if possible.`)
 			if (e) e.preventDefault()
-			if (!e || e.type !== 'keypress') this.invalid(unformatted.value, oldValue, newValue, this.input.value)
+			if (!e || e.type !== 'keypress') this.invalid(unformatted.value, oldValue, newValue)
 			return false
 		}
 		return true
