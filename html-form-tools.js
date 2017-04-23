@@ -11,52 +11,545 @@
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
-/******/ 			exports: {},
-/******/ 			id: moduleId,
-/******/ 			loaded: false
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
-
+/******/ 		module.l = true;
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-	const defaultCallbacks={unformat:!1,validate:!1,format:!1,sync:!1,invalid:!1,intermediate:!1,valid:!1},events={HTMLInputElement:{keypress:function(a){return this.debug(`keypress: value='${this.input.value}'`),!!this.ignoreKey(a)||void this.validateAndFormat(a)},input:function(a){this.debug(`input: value='${this.input.value}'`),this.validateAndFormat(a)},blur:function(){this.debug(`blur: value='${this.input.value}'`),this.sync()}}};var defaultOpts={defaultValue:null,ignoreCtrl:!0,ignoreAlt:!0,debug:!1},predictInput=function(a){if(!('key'in a))throw new Error(`predictInput called on event of type '${a.type}', which has no value 'key'. You probably only want to call this on KeyEvents`);var b=a.target.value.slice(0,a.target.selectionStart),c=a.target.value.slice(a.target.selectionEnd),d=`${b}${a.key}${c}`;return d};class ManagedInput{constructor(a,b,c){if('string'!=typeof a)this.input=a;else if(this.input=document.getElementById(a),!this.input&&(this.input=document.querySelector(a),!this.input))throw new Error(`Failed to find element by id or query selector '${a}'`);if('object'!=typeof this.input)throw Error(`Expected an object or the name of an element to manage, but got a '${typeof this.input}'`);if(!(this.input instanceof HTMLInputElement))throw Error(`Expected an HTMLInputElement, got a '${this.input.constructor.name}'`);if('format'in b&&!('unformat'in b)&&console.warn(`You defined the format callback but not the unformat callback. That probably won't work well.`),'unformat'in b&&!('format'in b)&&console.warn(`You defined the unformat callback but not the format callback. That probably won't work well.`),'format'in b||'unformat'in b||'validate'in b||console.warn(`You didn't define the format/unformat callbacks nor the validate callback. This module doesn't really do anything if you haven't defined at least one of those.`),this.callbacks={},'undefined'==typeof b&&(b={}),'object'!=typeof b)throw new Error(`callbacks should be an object, not a ${typeof b}`);if(Object.keys(defaultCallbacks).forEach(d=>{this.callbacks[d]=d in b?b[d]:defaultCallbacks[d]}),Object.keys(b).forEach(function(d){d in defaultCallbacks||console.warn(`Unknown callback: '${d}'`)}),this.opts={},'undefined'==typeof c&&(c={}),'object'!=typeof c)throw new Error(`opts should be an object, not a ${typeof c}`);Object.keys(defaultOpts).forEach(d=>{this.opts[d]=d in c?c[d]:defaultOpts[d]}),null!==this.opts.defaultValue&&(this.input.value=this.opts.defaultValue),this.validateAndFormat(),this.inputType=this.input.constructor.name,Object.keys(events[this.inputType]).forEach(d=>{this.input.addEventListener(d,f=>{events[this.inputType][d].bind(this)(f)})})}set(a){this.input.value=a,this.validateAndFormat()}unformat(a,b){return'undefined'==typeof a&&(a=this.input.value),this.callbacks.unformat?this.callbacks.unformat(a,b):a}unformatted(a){'undefined'==typeof a&&(a=this.input.value);var b=this.callbacks.unformat?this.callbacks.unformat(a):a;return'object'==typeof b?b.value:b}format(a,b){return this.callbacks.format?this.callbacks.format(a,b):a}validate(a){return'undefined'==typeof a&&(a=this.unformatted(this.input.value)),!this.callbacks.validate||this.callbacks.validate(a)}sync(a){'undefined'==typeof a&&(a=this.unformatted(this.input.value));try{if(this.callbacks.sync&&this.validate(a))return this.callbacks.sync(a)}catch(b){this.debug(`Refusing to sync invalid value ${a}`)}}invalid(a,b,c){this.callbacks.invalid&&this.callbacks.invalid(a,b,c,this.input)}intermediate(a,b,c){this.callbacks.intermediate&&this.callbacks.intermediate(a,b,c,this.input)}valid(a,b,c){this.callbacks.valid&&this.callbacks.valid(a,b,c,this.input)}ignoreKey(a){if(!('key'in a))throw new Error(`ignoreKey should only be called for KeyEvents. Called on event of type ${a.type}`);return(1<a.key.length||this.opts.ignoreCtrl&&a.ctrlKey||this.opts.ignoreAlt&&a.altKey)&&(this.debug({ignoring:a}),!0)}validateAndFormat(a){var b,c,d=this.input.selectionStart;a&&a.key?(b=this.input.value,c=predictInput(a),d++):c=this.input.value;var f=this.unformat(c,d);'object'!=typeof f&&(f={value:f,cursorPos:!1});try{if(!this.validate(f.value))this.debug(`'${f.value}': acceptable intermediate value, formatting delayed`),this.intermediate(f.value,b,c);else{var g=this.format(f.value,f.cursorPos);'object'!=typeof g&&(g={value:g,cursorPos:!1}),this.debug(`'${f.value}' (cursorPos=${f.cursorPos}) is valid, formatted as '${g.value}' (cursorPos=${g.cursorPos})`),a&&a.preventDefault(),this.input.value=g.value,g.cursorPos&&this.input.setSelectionRange(g.cursorPos,g.cursorPos),this.valid(f.value,b,c)}}catch(h){return this.debug(`Invalid value '${f.value}': "${h.message}". We'll prevent input if possible.`),a&&a.preventDefault(),a&&'keypress'===a.type||this.invalid(f.value,b,c),!1}return!0}debug(a){this.opts.debug&&console.log(a)}}const commafy=function(a,b){let c;switch(2>arguments.length&&(b=0),typeof a){case'number':c=a.toString();break;case'symbol':case'string':if(c=a.toString(),!c.match(/^\s*\d+(\.\d*)?\s*$/))return 2>arguments.length?a:{value:a,cursorPos:b};let j=c.substring(0,b),l=c.substring(b).trim();0===j.trim().length&&(b-=j.length,j=''),c=j+l;break;default:return 2>arguments.length?a:{value:a,cursorPos:b};}var d=c.match(/\./)?c.split(/\./,2):[c];for(var f=[],g=0,h=0;h<d[0].length;h++){let j=d[0].length-h-1;0!==h&&0==h%3&&(f.unshift(','),j<b&&g++),f.unshift(d[0].charAt(j))}return b+=g,d[0]=f.join(''),c=d.join('.'),2>arguments.length?c:{value:c,cursorPos:b}},uncommafy=function(a,b){var c=a.replace(/,/g,'');return 2<=arguments.length?(b-=a.substring(0,b).replace(/[^,]/g,'').length,{value:c,cursorPos:b}):c},mergeCallbacks=function(a,b,c,d=[]){return Object.keys(a).forEach(function(f){if(-1!==d.indexOf(f))f in b||(b[f]=a[f]);else{if(f in b)throw new Error(`You defined the callback '${f}', but '${c}' also defines that callback`);b[f]=a[f]}}),b},IntegerInput=function(a,b={},c={}){let d=JSON.parse(JSON.stringify(c));'commafy'in d||(d.commafy=!0);var f=!1;'MaxDigits'in d&&(f=d.MaxDigits,delete d.MaxDigits);var g=!1,h=!1;return d.commafy?(g=stackFormats(b,'format',function(j,l){return commafy(j,l)}),h=stackFormats(b,'unformat',function(j,l){return uncommafy(j,l)})):('format'in b&&(g=b.format),'unformat'in b&&(h=b.unformat)),delete d.commafy,new ManagedInput(a,mergeCallbacks(b,{validate:function(j){if(!j.match(/^[0-9]*$/))throw new Error('must be a integer');if(f&&j.length>f)throw new Error(`Must be at most ${f} digits`);return!0},format:g,unformat:h},'IntegerInput'),d)},FloatInput=function(a,b={},c={}){let d=JSON.parse(JSON.stringify(c));'commafy'in d||(d.commafy=!0);var f=!1;'MaxMantissaDigits'in d&&(f=d.MaxMantissaDigits,delete d.MaxMantissaDigits);var g=!1;'MaxDecimalDigits'in d&&(g=d.MaxDecimalDigits,delete d.MaxDecimalDigits);var h=!1,j=!1;return d.commafy?(h=stackFormats(b,'format',function(l,m){return commafy(l,m)}),j=stackFormats(b,'unformat',function(l,m){return uncommafy(l,m)})):('format'in b&&(h=b.format),'unformat'in b&&(j=b.unformat)),delete d.commafy,new ManagedInput(a,mergeCallbacks(b,{validate:function(l){if(l=l.toString(),0===l.length)return!1;var m=l.match(/^(\d*)((\.)(\d*))?$/);if(!m)throw new Error('Must be numeric (with out without a decimal)');if(f&&m[1]&&m[1].length>f)throw new Error(`Mantissa part must be no more than '${f}' digits`);if(g&&m[4]&&m[4].length>g)throw new Error(`Decimal part must be no more than '${g}' digits`);return m[3]&&!m[4]?!1:!0},format:h,unformat:j},'FloatInput',['format','unformat']),d)},stackFormats=function(a,b,c){let d;return d=b in a&&'function'==typeof a[b]?function(f,g){var h=c(f,g);return a[b](h.value,h.cursorPos)}:c,d},DollarInput=function(a,b={},c={}){let d=JSON.parse(JSON.stringify(c));return'MaxDecimalDigits'in d||(d.MaxDecimalDigits=2),FloatInput(a,mergeCallbacks(b,{unformat:function(f,g){f=f.toString();var h=f.replace(/^\$+/,''),j=g,l=f.length-h.length;return j-=Math.min(g,l),{value:h,cursorPos:j}},format:function(f,g){return{value:'$'+f,cursorPos:!1!==g&&g+1}}},'DollarInput'),d)};module.exports={ManagedInput:function(a,b,c){return new ManagedInput(a,b,c)},IntegerInput:IntegerInput,FloatInput:FloatInput,DollarInput:DollarInput,util:{commafy:commafy,uncommafy:uncommafy}};
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+// Functions the user should implement
+const defaultCallbacks = {
+	// Should strip formatting applied by the format() function and return the stripped value
+	// Params:
+	// * value - the formatted value
+	// * value - the position of the cursor prior to unformatting
+	// Should return one of the following:
+	// * The value with formatting removed
+	//  or
+	// * An object with the keys
+	//   * value: same as above
+	//   * cursorPos: The offset in the unformatted string of the cursor
+  //     This is optional, but without it the cursor will be moved to the end of the input with each keystroke
+	unformat: false,
 
-/***/ }
-/******/ ])
+	// Should:
+	// * return true if the value is valid
+	// * return false if the value is invalid but an acceptable intermediate value
+	//   (i.e. '1.' is not a valid decimal number but you can't type '1.0' witout first typing '1.')
+	// * throw an exception if the value is invalid and input should be prevented if possible
+	// Params:
+	// * value - The value of the input field with formatting stripped by unformat()
+	validate: false,
+
+	// Params:
+	// * value     - The validated, unformatted value of the input field
+	// * cursorPos - The position of the cursor prior to formatting
+	// Should return one of the following:
+	// * A String suitable to assign to input.value
+	//  or
+	// * An object with the keys
+	//   * value: same as above
+	//   * cursorPos: The offset in the formatted string of the cursor
+  //     This is optional, but without it the cursor will be moved to the end of the input with each keystroke
+	format: false,
+
+	// Should assign the value to some backend storage
+	// I recommend validating with respect to other related data and signaling the user
+	// if the new value would put your dataset in an invalid state, but that sort of logic here would
+	// be poorly placed and coupling of concerns.
+	// Params:
+	// * value - The validated, unformatted value of the input field
+	sync: false,
+
+	// Called when the input changes and the value is invalid
+	// We prevent this when possible, but we can't stop the user from pasting it in
+	invalid: false,
+
+	// Called when the input changes and the value is invalid but allowed (intermediate)
+	intermediate: false,
+
+	// Called when the input changes and the value is valid
+	valid: false,
+}
+
+// Events we intercept
+const events = {
+	HTMLInputElement: {
+/*
+		keydown: function(e) {
+			this.debug(`keydown: value='${this.input.value}'`)
+			if (this.ignoreKey(e)) return true
+		},
+		keyup: function(e) {
+			this.debug(`keyup: value='${this.input.value}'`)
+			if (this.ignoreKey(e)) return true
+		},
+*/
+		keypress: function(e) {
+			this.debug(`keypress: value='${this.input.value}'`)
+			if (this.ignoreKey(e)) return true
+			this.validateAndFormat(e)
+		},
+		// keypress handles normal typing and prevents input from firing
+		// input handles things when the user copys and pasts something in or deletes 
+		// with backspace or ctrl+x or something. All the possible things that could
+		// happen there are too complex to handle, so we never prevent these.
+		// validateAndFormat() will call the invalid() callback to let our user
+		// deal with it as appropriate (such as highlighting the field to signal the
+		// his/her user.)
+		input: function(e) { 
+			this.debug(`input: value='${this.input.value}'`)
+			this.validateAndFormat(e)
+		},
+
+		blur: function(e) {
+			this.debug(`blur: value='${this.input.value}'`)
+			this.sync()
+		},
+	}
+	// TODO: textarea
+	// TODO: select, checkbox, button (maybe?)
+}
+
+var defaultOpts = {
+	defaultValue: null,
+	ignoreCtrl: true,
+	ignoreAlt: true,
+	debug: false,
+}
+
+var predictInput = function(e) {
+	if (!('key' in e)) throw new Error(`predictInput called on event of type '${e.type}', which has no value 'key'. You probably only want to call this on KeyEvents`)
+	var beforeSelection = e.target.value.slice(0, e.target.selectionStart)
+	var afterSelection = e.target.value.slice(e.target.selectionEnd)
+	var res = `${beforeSelection}${e.key}${afterSelection}`
+	return res
+}
+
+class ManagedInput {
+	constructor(input, callbacks, opts) {
+		if (typeof input === 'string') {
+			this.input = document.getElementById(input)
+			if (!this.input) {
+				this.input = document.querySelector(input)
+				if (!this.input) throw new Error(`Failed to find element by id or query selector '${input}'`)
+			}
+		} else {
+			this.input = input
+		}
+		if (!(typeof this.input === 'object')) {
+			throw Error(`Expected an object or the name of an element to manage, but got a '${typeof this.input}'`)
+		}
+		if (!(this.input instanceof HTMLInputElement)) { // eslint-disable-line no-undef
+			throw Error(`Expected an HTMLInputElement, got a '${this.input.constructor.name}'`)
+		}
+
+		if (('format' in callbacks) && !('unformat' in callbacks)) {
+			console.warn(`You defined the format callback but not the unformat callback. That probably won't work well.`)
+		}
+		if (('unformat' in callbacks) && !('format' in callbacks)) {
+			console.warn(`You defined the unformat callback but not the format callback. That probably won't work well.`)
+		}
+		if (!(('format' in callbacks) || ('unformat' in callbacks) || ('validate' in callbacks))) {
+			console.warn(`You didn't define the format/unformat callbacks nor the validate callback. This module doesn't really do anything if you haven't defined at least one of those.`)
+		}
+
+		this.callbacks = {}
+		if (typeof callbacks === 'undefined') callbacks = {}
+		if (typeof callbacks !== 'object') throw new Error(`callbacks should be an object, not a ${typeof callbacks}`)
+		Object.keys(defaultCallbacks).forEach((cb) => {
+			this.callbacks[cb] = (cb in callbacks) ? callbacks[cb] : defaultCallbacks[cb]
+		})
+		Object.keys(callbacks).forEach(function(cb) {
+			if (!(cb in defaultCallbacks)) {
+				console.warn(`Unknown callback: '${cb}'`)
+			}
+		})
+
+		this.opts = {}
+		if (typeof opts === 'undefined') opts = {}
+		if (typeof opts !== 'object') throw new Error(`opts should be an object, not a ${typeof opts}`)
+		Object.keys(defaultOpts).forEach((opt) => {
+			this.opts[opt] = (opt in opts) ? opts[opt] : defaultOpts[opt]
+		})
+		if (this.opts.defaultValue !== null) {
+			this.input.value = this.opts.defaultValue
+		}
+		this.validateAndFormat()
+
+		this.inputType = this.input.constructor.name
+		Object.keys(events[this.inputType]).forEach((evnt) => {
+			this.input.addEventListener(evnt, (e) => { events[this.inputType][evnt].bind(this)(e) })
+		})
+
+	}
+
+	set(value) {
+		this.input.value = value
+		this.validateAndFormat()
+	}
+
+	unformat(value, cursorPos) {
+		if (typeof value === 'undefined') value = this.input.value
+		if (this.callbacks.unformat) return this.callbacks.unformat(value, cursorPos)
+		return value
+	}
+	unformatted(value) {
+		if (typeof value === 'undefined') value = this.input.value
+		var unf = this.callbacks.unformat ? this.callbacks.unformat(value) : value
+		if (typeof unf === 'object') return unf.value
+		return unf
+	}
+	format(value, cursorPos) {
+		if (this.callbacks.format) return this.callbacks.format(value, cursorPos)
+		return value
+	}
+	validate(value) {
+		if (typeof value === 'undefined') value = this.unformatted(this.input.value)
+		if (this.callbacks.validate) return this.callbacks.validate(value)
+		return true
+	}
+	sync(value) {
+		if (typeof value === 'undefined') value = this.unformatted(this.input.value)
+		try {
+			if (this.callbacks.sync && this.validate(value)) {
+				return this.callbacks.sync(value)
+			}
+		} catch(e) {
+			this.debug(`Refusing to sync invalid value ${value}`)
+		}
+	}
+	invalid(unformattedValue, oldValue, newValue) {
+		//if (this.callbacks.invalid) this.callbacks.invalid(unformattedValue, oldValue, newValue, this.input)
+		if (this.callbacks.invalid) this.callbacks.invalid({unformatted: unformattedValue, old: oldValue, new: newValue, input: this.input})
+	}
+	intermediate(unformattedValue, oldValue, newValue) {
+		//if (this.callbacks.intermediate) this.callbacks.intermediate(unformattedValue, oldValue, newValue, this.input)
+		if (this.callbacks.intermediate) this.callbacks.intermediate({unformatted: unformattedValue, old: oldValue, new: newValue, input: this.input})
+	}
+	valid(unformattedValue, oldValue, newValue) {
+		if (this.callbacks.valid) this.callbacks.valid({unformatted: unformattedValue, old: oldValue, new: newValue, input: this.input})
+	}
+
+	ignoreKey(evnt) {
+		if (!('key' in evnt)) throw new Error(`ignoreKey should only be called for KeyEvents. Called on event of type ${evnt.type}`)
+		if (evnt.key.length > 1 ||
+			(this.opts.ignoreCtrl && evnt.ctrlKey) ||
+			(this.opts.ignoreAlt && evnt.altKey) 
+		) {
+			this.debug({ignoring: evnt})
+			return true
+		}
+		return false
+	}
+
+	// If current state of input is a valid value,
+	// apply formatting.
+	// Call the valid/invalid callbacks in any case
+	// Returns:
+	// 	true  - calling event should prevent user input if possible ()
+	// 	false - calling event should allow user input
+	validateAndFormat(e) {
+		// NOTE -- We can't assume 'e' is set because we call this on instantiation to format the
+		// input's default value
+
+		var oldValue, newValue
+		var cursorPos = this.input.selectionStart
+		if (e && e.key) {
+			oldValue = this.input.value
+			newValue = predictInput(e)
+			cursorPos++
+		} else {
+			newValue = this.input.value
+		}
+		var unformatted = this.unformat(newValue, cursorPos)
+		if (typeof unformatted !== 'object') unformatted = { value: unformatted, cursorPos: false }
+		try {
+			if (!this.validate(unformatted.value)) {
+				this.debug(`'${unformatted.value}': acceptable intermediate value, formatting delayed`)
+				this.intermediate(unformatted.value, oldValue, newValue)
+			} else {
+				var formatted = this.format(unformatted.value, unformatted.cursorPos)
+				if (typeof formatted !== 'object') formatted = { value: formatted, cursorPos: false }
+				this.debug(`'${unformatted.value}' (cursorPos=${unformatted.cursorPos}) is valid, formatted as '${formatted.value}' (cursorPos=${formatted.cursorPos})`)
+				if (e) e.preventDefault() // Since we're inserting the formatted value, we prevent keystroke
+				this.input.value = formatted.value
+				if (formatted.cursorPos) {
+					this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos)
+				}
+				this.valid(unformatted.value, oldValue, newValue)
+			}
+		} catch (ex) {
+			this.debug(`Invalid value '${unformatted.value}': "${ex.message}". We'll prevent input if possible.`)
+			if (e) e.preventDefault()
+			if (!e || e.type !== 'keypress') this.invalid(unformatted.value, oldValue, newValue)
+			return false
+		}
+		return true
+	}
+
+	debug(msg) {
+		if (this.opts.debug) console.log(msg)
+	}
+
+}
+
+const commafy = function(num, cursorPos) {
+	let value
+	if (arguments.length < 2) cursorPos = 0
+	switch (typeof num) {
+	case 'number':
+		value = num.toString()
+		break
+	case 'symbol':
+	case 'string':
+		value = num.toString()
+		// Don't bother with things that don't look like numbers
+		if (!value.match(/^\s*\d+(\.\d*)?\s*$/)) {
+			if (arguments.length < 2) return num
+			return {value: num, cursorPos: cursorPos}
+		}
+		// trim, adjusting cursorPos
+		let before = value.substring(0,cursorPos)
+		let after = value.substring(cursorPos).trim()
+		if (before.trim().length === 0) {
+			cursorPos -= before.length
+			before = ''
+		}
+		value = before+after
+		break
+	default:
+		if (arguments.length < 2) return num
+		return {value: num, cursorPos: cursorPos}
+	}
+	var parts
+	if (value.match(/\./)) {
+		parts = value.split(/\./,2)
+	} else {
+		parts = [value]
+	}
+	var res = []
+	var moveCursor = 0
+	for (var i=0; i<parts[0].length; i++) {
+		let pos=parts[0].length-i-1
+		if (i !== 0 && i % 3 === 0) {
+			res.unshift(',')
+			if (pos < cursorPos) moveCursor++
+		}
+		res.unshift(parts[0].charAt(pos))
+	}
+	cursorPos += moveCursor
+	parts[0] = res.join('')
+	value = parts.join('.')
+	if (arguments.length < 2) {
+		return value
+	} else {
+		return {value: value, cursorPos: cursorPos }
+	}
+}
+const uncommafy = function(value, cursorPos) {
+	var val = value.replace(/,/g,'')
+	if (arguments.length >= 2) {
+		cursorPos -= value.substring(0,cursorPos).replace(/[^,]/g,'').length
+		return {value: val, cursorPos: cursorPos}
+	}
+	return val
+}
+
+const mergeCallbacks = function(src, tgt, name, skip = []) {
+	Object.keys(src).forEach(function(k) {
+		if (skip.indexOf(k) !== -1) {
+			if (!(k in tgt)) tgt[k] = src[k]
+		} else {
+			if (k in tgt) throw new Error(`You defined the callback '${k}', but '${name}' also defines that callback`)
+			tgt[k] = src[k]
+		}
+	})
+	return tgt
+}
+
+const IntegerInput = function(input, callbacks = {}, opts = {}) {
+	let newOpts = JSON.parse(JSON.stringify(opts))
+	if (!('commafy' in newOpts)) newOpts.commafy = true
+	var maxDigits = false
+	if ('MaxDigits' in newOpts) {
+		maxDigits = newOpts.MaxDigits
+		delete newOpts.MaxDigits
+	}
+
+	var fmt = false
+	var ufmt = false
+	if (newOpts.commafy) {
+		fmt = stackFormats(callbacks, 'format', function(value, cursorPos) { return commafy(value, cursorPos) })
+		ufmt = stackFormats(callbacks, 'unformat', function(value, cursorPos) { return uncommafy(value, cursorPos) })
+	} else {
+		if ('format' in callbacks) fmt = callbacks.format
+		if ('unformat' in callbacks) ufmt = callbacks.unformat
+	}
+	delete newOpts.commafy
+
+	return new ManagedInput(input, mergeCallbacks(callbacks, {
+		validate: function(val) {
+			if (!val.match(/^[0-9]*$/)) throw new Error('must be a integer')
+			if (maxDigits && val.length > maxDigits) throw new Error(`Must be at most ${maxDigits} digits`)
+			return true
+		},
+		format: fmt,
+		unformat: ufmt,
+	}, 'IntegerInput'), newOpts)
+}
+
+const FloatInput = function(input, callbacks = {}, opts = {}) {
+	let newOpts = JSON.parse(JSON.stringify(opts))
+	if (!('commafy' in newOpts)) newOpts.commafy = true
+
+	var maxMantissa = false
+	if ('MaxMantissaDigits' in newOpts) {
+		maxMantissa = newOpts.MaxMantissaDigits
+		delete newOpts.MaxMantissaDigits
+	}
+	var maxDecimal = false
+	if ('MaxDecimalDigits' in newOpts) {
+		maxDecimal = newOpts.MaxDecimalDigits
+		delete newOpts.MaxDecimalDigits
+	}
+	var fmt = false
+	var ufmt = false
+	if (newOpts.commafy) {
+		fmt = stackFormats(callbacks, 'format', function(value, cursorPos) { return commafy(value, cursorPos) })
+		ufmt = stackFormats(callbacks, 'unformat', function(value, cursorPos) { return uncommafy(value, cursorPos) })
+	} else {
+		if ('format' in callbacks) fmt = callbacks.format
+		if ('unformat' in callbacks) ufmt = callbacks.unformat
+	}
+	delete newOpts.commafy
+
+	return new ManagedInput(input, mergeCallbacks(callbacks, {
+		validate: function(value) {
+			value = value.toString()
+			if (value.length === 0) return false
+			//                      0 1    23   4
+			var parts = value.match(/^(\d*)((\.)(\d*))?$/)
+			if (!parts) throw new Error('Must be numeric (with out without a decimal)')
+			if (maxMantissa && parts[1] && parts[1].length > maxMantissa) throw new Error(`Mantissa part must be no more than '${maxMantissa}' digits`)
+			if (maxDecimal && parts[4] && parts[4].length > maxDecimal) throw new Error(`Decimal part must be no more than '${maxDecimal}' digits`)
+			if (parts[3] && !parts[4]) return false
+			return true
+		},
+		format: fmt,
+		unformat: ufmt,
+	}, 'FloatInput', ['format','unformat']), newOpts)
+}
+
+const stackFormats = function(callbacks, name, formatter) {
+	let fun
+	if (name in callbacks && typeof callbacks[name] === 'function') {
+		fun = function(value, cursorPos) { 
+			var fmtd = formatter(value, cursorPos)
+			return callbacks[name](fmtd.value, fmtd.cursorPos) 
+		}
+	} else {
+		fun = formatter
+	}
+	return fun
+}
+
+const DollarInput = function(input, callbacks = {}, opts = {}) {
+	let newOpts = JSON.parse(JSON.stringify(opts))
+	if (!('MaxDecimalDigits' in newOpts)) newOpts.MaxDecimalDigits = 2
+	return FloatInput(input, mergeCallbacks(callbacks, {
+		unformat: function(value, cursorPos) {
+			value = value.toString()
+			var unf = value.replace(/^\$+/,'')
+			var cp = cursorPos
+			var ext = value.length - unf.length
+			cp -= Math.min(cursorPos, ext)
+			return { value: unf, cursorPos: cp }
+		},
+		format: function(value, cursorPos) {
+			var res = {value: '$'+value, cursorPos: (cursorPos === false) ? false : cursorPos+1 }
+			return res
+		}
+	}, 'DollarInput'), newOpts)
+}
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+	ManagedInput: function(input, callbacks, opts) { return new ManagedInput(input, callbacks, opts) },
+	IntegerInput: IntegerInput,
+	FloatInput: FloatInput,
+	DollarInput: DollarInput,
+	util: {
+		commafy: commafy,
+		uncommafy: uncommafy,
+	},
 });
-;
+
+
+/***/ })
+/******/ ]);
+});

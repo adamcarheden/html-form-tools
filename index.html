@@ -1,27 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>HTML Form Tools</title>
-<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/styles/default.min.css">
-<script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.7.0/highlight.min.js"></script>
-<script src='node_modules/rosetta-markdown/rosetta-markdown.js'></script>
-<script>
-    window['rosetta-markdown'].marked.setOptions({
-        highlight: function(code) {
-            return hljs.highlightAuto(code).value;
-        }
-    });
-</script>
-<style>
-pre {
-        border: 1px solid black;
-        margin: 0px 0.25em;
-        padding: 0.5em;
-}
-</style>
-</head>
-<body>
-        <script type='text/markdown' src='README.md'></script>
-</body>
+  <head>
+    <meta charset="utf-8">
+		<title>HTML Form Tools</title>
+		<link rel="stylesheet" href="../static/css/highlightjs.css">
+  </head>
+  <body>
+		<h1 style='text-decoration:underline'>Live example for development</h1>
+    <div id="app">
+			<table>
+				<tr>
+					<th colspan='2'>&nbsp;</th>
+					<th>Data Value</th>
+				</td>
+				<tr>
+					<td>no 'z'</td>
+					<td><input id='noz'/></td>
+					<td></td>
+				</td>
+				<tr>
+					<td>Integer</td>
+					<td><input id='integer'/></td>
+					<td></td>
+				</td>
+				<tr>
+					<td>Float</td>
+					<td><input id='float'/></td>
+					<td></td>
+				</td>
+				<tr>
+					<td>Dollar</td>
+					<td><input id='dollar'/></td>
+					<td></td>
+				</td>
+			</table>
+    </div>
+		<hr/>
+		<h1 style='text-decoration:underline'>Documentation</h1>
+		<div id='doc'>
+			<script type='text/markdown' src='../static/doc/README.md'></script>
+		</div>
+    <!-- built files will be auto injected -->
+  </body>
 </html>

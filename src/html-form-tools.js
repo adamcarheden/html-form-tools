@@ -201,13 +201,15 @@ class ManagedInput {
 		}
 	}
 	invalid(unformattedValue, oldValue, newValue) {
-		if (this.callbacks.invalid) this.callbacks.invalid(unformattedValue, oldValue, newValue, this.input)
+		//if (this.callbacks.invalid) this.callbacks.invalid(unformattedValue, oldValue, newValue, this.input)
+		if (this.callbacks.invalid) this.callbacks.invalid({unformatted: unformattedValue, old: oldValue, new: newValue, input: this.input})
 	}
 	intermediate(unformattedValue, oldValue, newValue) {
-		if (this.callbacks.intermediate) this.callbacks.intermediate(unformattedValue, oldValue, newValue, this.input)
+		//if (this.callbacks.intermediate) this.callbacks.intermediate(unformattedValue, oldValue, newValue, this.input)
+		if (this.callbacks.intermediate) this.callbacks.intermediate({unformatted: unformattedValue, old: oldValue, new: newValue, input: this.input})
 	}
 	valid(unformattedValue, oldValue, newValue) {
-		if (this.callbacks.valid) this.callbacks.valid(unformattedValue, oldValue, newValue, this.input)
+		if (this.callbacks.valid) this.callbacks.valid({unformatted: unformattedValue, old: oldValue, new: newValue, input: this.input})
 	}
 
 	ignoreKey(evnt) {
@@ -452,7 +454,7 @@ const DollarInput = function(input, callbacks = {}, opts = {}) {
 	}, 'DollarInput'), newOpts)
 }
 
-module.exports = {
+export default {
 	ManagedInput: function(input, callbacks, opts) { return new ManagedInput(input, callbacks, opts) },
 	IntegerInput: IntegerInput,
 	FloatInput: FloatInput,
