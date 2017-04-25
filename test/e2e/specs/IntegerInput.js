@@ -9,16 +9,15 @@ module.exports = {
 		// see nightwatch.conf.js
 		const devServer = browser.globals.devServerURL
 
+		// Sanity check
 		browser
 			.url(devServer)
 			.waitForElementVisible('#app', 5000)
 			.assert.elementPresent('input#integer')
-			.getValue('input#integer', fixtures.expect(''))
-			.setValue('input#integer',fixtures.arrays.SYMBOLS)
-			.getValue('input#integer', fixtures.expect(''))
-			.setValue('input#integer',fixtures.arrays.UPPER)
-			.getValue('input#integer', fixtures.expect(''))
-			.setValue('input#integer',fixtures.arrays.LOWER)
+
+		// Test valid input
+		browser
+			.clearValue('input#integer')
 			.getValue('input#integer', fixtures.expect(''))
 			.setValue('input#integer',['1'])
 			.getValue('input#integer', fixtures.expect('1'))
@@ -34,6 +33,18 @@ module.exports = {
 			.getValue('input#integer', fixtures.expect('123,456'))
 			.setValue('input#integer',['7'])
 			.getValue('input#integer', fixtures.expect('1,234,567'))
-			.end()
+
+		// Test invalid input
+		browser
+			.clearValue('input#integer')
+			.getValue('input#integer', fixtures.expect(''))
+			.setValue('input#integer',fixtures.arrays.SYMBOLS)
+			.getValue('input#integer', fixtures.expect(''))
+			.setValue('input#integer',fixtures.arrays.UPPER)
+			.getValue('input#integer', fixtures.expect(''))
+			.setValue('input#integer',fixtures.arrays.LOWER)
+			.getValue('input#integer', fixtures.expect(''))
+
+		browser.end()
 	}
 }

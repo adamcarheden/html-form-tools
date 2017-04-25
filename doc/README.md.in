@@ -149,8 +149,8 @@ Beta. Seems to work well, but needs unit testing and a larger library of pre-def
 ``` bash
 git clone https://github.com/adamcarheden/html-form-tools.git
 cd html-form-tools
-npm run lint
-npm run build
+npm run test
+npm run release
 ```
 Everything important is in src/html-form-tools.js.
 
