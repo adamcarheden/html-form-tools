@@ -1,6 +1,7 @@
 const webpack = require( 'webpack' )
 const path = require('path')
 const projectRoot = path.resolve(__dirname+"/../")
+const BabiliPlugin = require("babili-webpack-plugin")
 
 module.exports = {
 	entry: projectRoot+'/src/html-form-tools.js',
@@ -38,4 +39,7 @@ module.exports = {
 			},
 		]
 	},
+	plugins: [
+		new BabiliPlugin()
+	]
 }
