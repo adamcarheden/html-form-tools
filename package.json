@@ -13,7 +13,7 @@
     "test": "npm run unit && npm run e2e",
     "lint": "eslint --ext .js,.html src test/unit/specs test/e2e/specs",
     "lint-examples": "eslint --ext .js --ext .html examples/simple.html",
-    "doc": "npm run lint-examples && node doc/makedoc.js doc/README.md.in > static/doc/README.md && chmod 444 static/doc/README.md"
+    "doc": "npm run lint-examples && (test -f static/doc/README.md && chmod 644 static/doc/README.md) || true && node doc/makedoc.js doc/README.md.in > static/doc/README.md chmod 444 static/doc/README.md"
   },
   "author": {
     "name": "Adam Carheden",

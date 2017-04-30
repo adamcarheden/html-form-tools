@@ -152,6 +152,4 @@ cd html-form-tools
 npm run test
 npm run release
 ```
-Everything important is in src/html-form-tools.js.
-
 PRs welcome.

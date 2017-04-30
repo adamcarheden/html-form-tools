@@ -18,6 +18,8 @@ module.exports = {
 			.getValue('input#noz', fixtures.expect(''))
 			.setValue('input#noz',fixtures.arrays.ASCII_PRINTABLES)
 			.getValue('input#noz', fixtures.expect(noz))
-			.end()
+
+
+		browser.end()
 	}
 }
