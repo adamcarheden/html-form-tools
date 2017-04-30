@@ -9,6 +9,8 @@ module.exports = {
 		// see nightwatch.conf.js
 		const devServer = browser.globals.devServerURL
 
+
+		// Test basic functionality
 		const noz = fixtures.strings.ASCII_PRINTABLES.replace(/z/ig,'')
 		browser
 			.url(devServer)
@@ -18,8 +20,6 @@ module.exports = {
 			.getValue('input#noz', fixtures.expect(''))
 			.setValue('input#noz',fixtures.arrays.ASCII_PRINTABLES)
 			.getValue('input#noz', fixtures.expect(noz))
-
-
-		browser.end()
+			.end()
 	}
 }

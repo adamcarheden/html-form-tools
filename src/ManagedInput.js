@@ -48,7 +48,7 @@ const defaultCallbacks = {
 
 	// Called when the input changes and the value is invalid but allowed (intermediate)
 	intermediate: false,
-
+	//
 	// Called when the input changes and the value is valid
 	valid: false,
 }
@@ -235,7 +235,8 @@ export default class ManagedInput {
 		// NOTE -- We can't assume 'e' is set because we call this on instantiation to format the
 		// input's default value
 
-		var oldValue, newValue
+		var oldValue = ''
+		var newValue
 		var cursorPos = this.input.selectionStart
 		if (e && e.key) {
 			oldValue = this.input.value
