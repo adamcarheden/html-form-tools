@@ -165,11 +165,6 @@ export default class ManagedInput {
 
 	}
 
-	set(value) {
-		this.input.value = value
-		this.validateAndFormat()
-	}
-
 	unformat(value, cursorPos) {
 		if (typeof value === 'undefined') value = this.input.value
 		if (this.callbacks.unformat) return this.callbacks.unformat(value, cursorPos)
@@ -245,7 +240,7 @@ export default class ManagedInput {
 		} else {
 			newValue = this.input.value
 		}
-		var unformatted = this.unformat(newValue, cursorPos)
+		let unformatted = this.unformat(newValue, cursorPos)
 		if (typeof unformatted !== 'object') unformatted = { value: unformatted, cursorPos: false }
 		try {
 			if (!this.validate(unformatted.value)) {
@@ -270,6 +265,36 @@ export default class ManagedInput {
 		}
 		return true
 	}
+	set(newValue, force) {
+		var oldValue = this.input.value
+		let unformatted = this.unformat(newValue)
+		if (typeof unformatted !== 'object') unformatted = { value: unformatted, cursorPos: false }
+		var formatted = newValue
+		var valid = false
+		try {
+			if (!this.validate(unformatted.value)) {
+				this.debug(`set() called with '${unformatted.value}': acceptable intermediate value set programatically, formatting delayed`)
+				this.intermediate(unformatted.value, oldValue, newValue)
+			} else {
+				valid = true
+				formatted = this.format(unformatted.value, unformatted.cursorPos)
+				this.debug(`set() called with '${unformatted.value}': valid, formatted as '${formatted.value}' (cursorPos=${formatted.cursorPos})`)
+			}
+		} catch (ex) {
+			if (force) {
+				this.debug(`set() called with force. Setting invalid value '${unformatted.value}': "${ex.message}". `)
+			} else {
+				this.debug(`set() called without force, ignoring invalid value '${unformatted.value}': "${ex.message}". `)
+				return valid
+			}
+		}
+		if (typeof formatted !== 'object') formatted = { value: formatted, cursorPos: false }
+		this.input.value = formatted.value
+		if (formatted.cursorPos) this.input.setSelectionRange(formatted.cursorPos, formatted.cursorPos)
+		if (valid) this.valid(unformatted.value, oldValue, newValue)
+		return valid
+	}
+
 
 	debug(msg) {
 		if (this.opts.debug) console.log(msg)
