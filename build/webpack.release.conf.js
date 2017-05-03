@@ -25,19 +25,13 @@ module.exports = {
 				options: {
 					formatter: require('eslint-friendly-formatter')
 				}
+			},
+			{
+				test: /\.(js)$/,
+				exclude: /node_modules/,
+				loader: 'babel-loader',
 			}
 		],
-		loaders: [
-			{
-				test: /\.js$/,
-				loader: 'babel',
-				include: projectRoot,
-				exclude: /node_modules/,
-				query: {
-					presets: ['babili']
-				}
-			},
-		]
 	},
 	plugins: [
 		new BabiliPlugin()
