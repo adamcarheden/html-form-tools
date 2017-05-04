@@ -158,7 +158,7 @@ export default class ManagedInput {
 		}
 		this.validateAndFormat()
 
-		this.inputType = this.input.constructor.name
+		this.inputType = 'HTMLInputElement' // This is better written as 'this.input.constructor.name', but that fails in some browsers (PhantomJS)
 		Object.keys(events[this.inputType]).forEach((evnt) => {
 			this.input.addEventListener(evnt, (e) => { events[this.inputType][evnt].bind(this)(e) })
 		})
