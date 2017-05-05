@@ -52,6 +52,7 @@ export const commafy = function(num, cursorPos) {
 	}
 }
 export const uncommafy = function(value, cursorPos) {
+	if (typeof value !== 'string') return value
 	var val = value.replace(/,/g,'')
 	if (arguments.length >= 2) {
 		cursorPos -= value.substring(0,cursorPos).replace(/[^,]/g,'').length
