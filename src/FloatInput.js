@@ -28,7 +28,11 @@ export default function(input, callbacks = {}, opts = {}) {
 
 	return new ManagedInput(input, mergeCallbacks(callbacks, {
 		validate: function(value) {
-			value = value.toString()
+			if (typeof value === 'undefined') {
+				value = ''
+			} else {
+				value = value.toString()
+			}
 			if (value.length === 0) return false
 			//                      0 1    23   4
 			var parts = value.match(/^(\d*)((\.)(\d*))?$/)

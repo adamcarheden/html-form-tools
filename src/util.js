@@ -52,13 +52,25 @@ export const commafy = function(num, cursorPos) {
 	}
 }
 export const uncommafy = function(value, cursorPos) {
-	if (typeof value !== 'string') return value
-	var val = value.replace(/,/g,'')
-	if (arguments.length >= 2) {
-		cursorPos -= value.substring(0,cursorPos).replace(/[^,]/g,'').length
-		return {value: val, cursorPos: cursorPos}
+	switch (typeof value) {
+	case 'number':
+		return value.toString()
+		break
+	case 'symbol':
+	case 'string':
+		var val = value.replace(/,/g,'')
+		if (arguments.length >= 2) {
+			cursorPos -= value.substring(0,cursorPos).replace(/[^,]/g,'').length
+			return {value: val, cursorPos: cursorPos}
+		}
+		return val
+		break
+	case 'undefined':
+		return ''
+		break
+	default:
+		return value.toString()
 	}
-	return val
 }
 
 export const mergeCallbacks = function(src, tgt, name, skip = []) {

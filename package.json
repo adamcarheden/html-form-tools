@@ -1,6 +1,6 @@
 {
   "name": "html-form-tools",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Framework for limiting, validating and formatting user input into HTML form fields",
   "main": "html-form-tools.js",
   "scripts": {

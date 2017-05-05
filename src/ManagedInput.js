@@ -167,11 +167,21 @@ export default class ManagedInput {
 
 	unformat(value, cursorPos) {
 		if (typeof value === 'undefined') value = this.input.value
+		if (typeof value === 'undefined') {
+			value = ''
+		} else {
+			value = value.toString()
+		}
 		if (this.callbacks.unformat) return this.callbacks.unformat(value, cursorPos)
 		return value
 	}
 	unformatted(value) {
 		if (typeof value === 'undefined') value = this.input.value
+		if (typeof value === 'undefined') {
+			value = ''
+		} else {
+			value = value.toString()
+		}
 		var unf = this.callbacks.unformat ? this.callbacks.unformat(value) : value
 		if (typeof unf === 'object') return unf.value
 		return unf

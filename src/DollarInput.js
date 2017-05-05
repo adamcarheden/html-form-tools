@@ -6,7 +6,11 @@ export default function(input, callbacks = {}, opts = {}) {
 	if (!('MaxDecimalDigits' in newOpts)) newOpts.MaxDecimalDigits = 2
 	return FloatInput(input, mergeCallbacks(callbacks, {
 		unformat: function(value, cursorPos) {
-			value = value.toString()
+			if (typeof value === 'undefined') {
+				value = ''
+			} else {
+				value = value.toString()
+			}
 			var unf = value.replace(/^\$+/,'')
 			var cp = cursorPos
 			var ext = value.length - unf.length
