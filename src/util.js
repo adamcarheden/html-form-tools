@@ -55,7 +55,6 @@ export const uncommafy = function(value, cursorPos) {
 	switch (typeof value) {
 	case 'number':
 		return value.toString()
-		break
 	case 'symbol':
 	case 'string':
 		var val = value.replace(/,/g,'')
@@ -64,10 +63,8 @@ export const uncommafy = function(value, cursorPos) {
 			return {value: val, cursorPos: cursorPos}
 		}
 		return val
-		break
 	case 'undefined':
 		return ''
-		break
 	default:
 		return value.toString()
 	}
